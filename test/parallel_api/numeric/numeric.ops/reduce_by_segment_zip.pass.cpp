@@ -61,18 +61,18 @@ test_with_usm()
     prepare_data(n, keys1, keys2, values);
 
     // allocate USM memory and copying data to USM shared/device memory
-    TestUtils::usm_data_transfer<alloc_type, int> dt_helper1(q, std::begin(keys1),         std::end(keys1));
-    TestUtils::usm_data_transfer<alloc_type, int> dt_helper2(q, std::begin(keys2),         std::end(keys2));
-    TestUtils::usm_data_transfer<alloc_type, int> dt_helper3(q, std::begin(values),        std::end(values));
-    TestUtils::usm_data_transfer<alloc_type, int> dt_helper4(q, std::begin(output_keys1),  std::end(output_keys1));
-    TestUtils::usm_data_transfer<alloc_type, int> dt_helper5(q, std::begin(output_keys2),  std::end(output_keys2));
-    TestUtils::usm_data_transfer<alloc_type, int> dt_helper6(q, std::begin(output_values), std::end(output_values));
-    auto d_keys1         = dt_helper1.get_data();
-    auto d_keys2         = dt_helper2.get_data();
-    auto d_values        = dt_helper3.get_data();
-    auto d_output_keys1  = dt_helper4.get_data();
-    auto d_output_keys2  = dt_helper5.get_data();
-    auto d_output_values = dt_helper6.get_data();
+    auto usmPtr1 = TestUtils::usm_alloc_and_copy<alloc_type, int>(q, keys1,         n);
+    auto usmPtr2 = TestUtils::usm_alloc_and_copy<alloc_type, int>(q, keys2,         n);
+    auto usmPtr3 = TestUtils::usm_alloc_and_copy<alloc_type, int>(q, values,        n);
+    auto usmPtr4 = TestUtils::usm_alloc_and_copy<alloc_type, int>(q, output_keys1,  n);
+    auto usmPtr5 = TestUtils::usm_alloc_and_copy<alloc_type, int>(q, output_keys2,  n);
+    auto usmPtr6 = TestUtils::usm_alloc_and_copy<alloc_type, int>(q, output_values, n);
+    auto d_keys1         = usmPtr1.get();
+    auto d_keys2         = usmPtr2.get();
+    auto d_values        = usmPtr3.get();
+    auto d_output_keys1  = usmPtr4.get();
+    auto d_output_keys2  = usmPtr5.get();
+    auto d_output_values = usmPtr6.get();
 
     //make zip iterators
     auto begin_keys_in = oneapi::dpl::make_zip_iterator(d_keys1, d_keys2);
@@ -87,9 +87,9 @@ test_with_usm()
     q.wait();
 
     //retrieve result on the host and check the result
-    dt_helper4.retrieve_data(output_keys1);
-    dt_helper5.retrieve_data(output_keys2);
-    dt_helper6.retrieve_data(output_values);
+    TestUtils::retrieve_data(q, usmPtr4, output_keys1,  n);
+    TestUtils::retrieve_data(q, usmPtr5, output_keys2,  n);
+    TestUtils::retrieve_data(q, usmPtr6, output_values, n);
 
 //Dump
 #if 0
