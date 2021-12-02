@@ -151,6 +151,7 @@ struct test_non_const
 };
 
 #if !ONEDPL_FPGA_DEVICE
+[[__sycl_detail__::__uses_aspects__(aspect::fp64)]]
 void test_merge_by_type_float64_t()
 {
     test_merge_by_type<float64_t>([](size_t v) { return float64_t(v); }, [](size_t v) { return float64_t(v - 100); });
