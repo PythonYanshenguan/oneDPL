@@ -179,6 +179,7 @@ Equal(std::int32_t x, std::int32_t y)
 template <typename T>
 struct test_sort_with_compare
 {
+#if TEST_DPCPP_BACKEND_PRESENT
 #if _PSTL_SYCL_TEST_USM
     template <sycl::usm::alloc alloc_type, typename Policy, typename InputIterator, typename OutputIterator,
               typename OutputIterator2, typename Size, typename Compare>
@@ -227,6 +228,7 @@ struct test_sort_with_compare
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
 #endif
+#endif
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
@@ -262,6 +264,7 @@ struct test_sort_with_compare
     test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
     {
+#if TEST_DPCPP_BACKEND_PRESENT
 #if _PSTL_SYCL_TEST_USM
         // Run tests for USM shared memory
         test_usm<sycl::usm::alloc::shared>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
@@ -269,6 +272,7 @@ struct test_sort_with_compare
         // Run tests for USM device memory
         test_usm<sycl::usm::alloc::device>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
                                            compare);
+#endif
 #endif
     }
 
@@ -296,6 +300,7 @@ struct test_sort_with_compare
 template <typename T>
 struct test_sort_without_compare
 {
+#if TEST_DPCPP_BACKEND_PRESENT
 #if _PSTL_SYCL_TEST_USM
     template <sycl::usm::alloc alloc_type, typename Policy, typename InputIterator, typename OutputIterator,
               typename OutputIterator2, typename Size>
@@ -347,6 +352,7 @@ struct test_sort_without_compare
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
 #endif
+#endif
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
@@ -380,11 +386,13 @@ struct test_sort_without_compare
     test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
     {
+#if TEST_DPCPP_BACKEND_PRESENT
 #if _PSTL_SYCL_TEST_USM
         // Run tests for USM shared memory
         test_usm<sycl::usm::alloc::shared>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
         // Run tests for USM device memory
         test_usm<sycl::usm::alloc::device>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
+#endif
 #endif
     }
 
