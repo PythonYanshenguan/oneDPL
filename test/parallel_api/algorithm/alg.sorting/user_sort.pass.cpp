@@ -32,8 +32,8 @@ template <sycl::usm::alloc alloc_type>
 void
 test_with_usm(sycl::queue& q)
 {
-    int h_key [N] = { };
-    int h_val [N] = { };
+    int h_key[N] = {};
+    int h_val[N] = {};
     for (int i = 0; i < N; i++)
     {
         h_val[i] = ((N - 1 - i) / 3) * 3;
@@ -49,28 +49,31 @@ test_with_usm(sycl::queue& q)
     auto first = oneapi::dpl::make_zip_iterator(d_key, d_val);
     auto last = first + std::distance(d_key, d_key + N);
 
-    auto myPolicy = oneapi::dpl::execution::make_device_policy<TestUtils::unique_kernel_name<class copy, (::std::size_t)alloc_type>>(q);
+    auto myPolicy = oneapi::dpl::execution::make_device_policy<
+        TestUtils::unique_kernel_name<class copy, (::std::size_t)alloc_type>>(q);
     std::sort(myPolicy, first, last,
-        [](const auto& it1, const auto& it2)
-        {
-            using std::get;
-            return get<0>(it1) > get<0>(it2);
-        });
+              [](const auto& it1, const auto& it2)
+              {
+                  using std::get;
+                  return get<0>(it1) > get<0>(it2);
+              });
 
-    int h_skey[N] = { };
-    int h_sval[N] = { };
+    int h_skey[N] = {};
+    int h_sval[N] = {};
 
     dt_helper_h_key.retrieve_data(h_skey);
     dt_helper_h_val.retrieve_data(h_sval);
 
     for (int i = 0; i < N; i++)
     {
-        std::cout << "Initial" << " Key:" << h_key[i] << " Val:" << h_val[i] << std::endl;
+        std::cout << "Initial"
+                  << " Key:" << h_key[i] << " Val:" << h_val[i] << std::endl;
     }
 
     for (int i = 0; i < N; i++)
     {
-        std::cout << "Sorted descending" << " Key:" << h_skey[i] << " Val:" << h_sval[i] << std::endl;
+        std::cout << "Sorted descending"
+                  << " Key:" << h_skey[i] << " Val:" << h_sval[i] << std::endl;
 
         if (i < (N - 1))
         {
@@ -81,7 +84,8 @@ test_with_usm(sycl::queue& q)
 
 #endif
 
-int main()
+int
+main()
 {
 #if TEST_DPCPP_BACKEND_PRESENT
     auto exception_handler = [](cl::sycl::exception_list exceptions)

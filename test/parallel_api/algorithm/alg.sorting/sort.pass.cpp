@@ -184,11 +184,8 @@ struct test_sort_with_compare
               typename OutputIterator2, typename Size, typename Compare>
     typename ::std::enable_if<is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
                               void>::type
-    test_usm(Policy&& exec,
-             OutputIterator tmp_first, OutputIterator tmp_last,
-             OutputIterator2 expected_first, OutputIterator2 expected_last,
-             InputIterator first, InputIterator /* last */,
-             Size n, Compare compare)
+    test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+             OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n, Compare compare)
     {
         using namespace std;
         copy_n(first, n, expected_first);
@@ -234,11 +231,8 @@ struct test_sort_with_compare
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
     oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
-    test(Policy&& exec,
-         OutputIterator tmp_first, OutputIterator tmp_last,
-         OutputIterator2 expected_first, OutputIterator2 expected_last,
-         InputIterator first, InputIterator /*last*/,
-         Size n, Compare compare)
+    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+         OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n, Compare compare)
     {
         using namespace std;
         copy_n(first, n, expected_first);
@@ -265,29 +259,25 @@ struct test_sort_with_compare
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
     oneapi::dpl::__internal::__enable_if_non_host_execution_policy<Policy, void>
-    test(Policy&& exec,
-         OutputIterator tmp_first, OutputIterator tmp_last,
-         OutputIterator2 expected_first, OutputIterator2 expected_last,
-         InputIterator first, InputIterator last,
-         Size n, Compare compare)
+    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+         OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
     {
 #if _PSTL_SYCL_TEST_USM
         // Run tests for USM shared memory
-        test_usm<sycl::usm::alloc::shared>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
+        test_usm<sycl::usm::alloc::shared>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
+                                           compare);
         // Run tests for USM device memory
-        test_usm<sycl::usm::alloc::device>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
+        test_usm<sycl::usm::alloc::device>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
+                                           compare);
 #endif
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
     typename ::std::enable_if<is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
-                            void>::type
-    operator()(Policy&& exec,
-               OutputIterator tmp_first, OutputIterator tmp_last,
-               OutputIterator2 expected_first, OutputIterator2 expected_last,
-               InputIterator first, InputIterator last,
-               Size n, Compare compare)
+                              void>::type
+    operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+               OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
     {
         test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
     }
@@ -295,14 +285,15 @@ struct test_sort_with_compare
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
     typename ::std::enable_if<!is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
-                            void>::type
-    operator()(Policy&& /* exec */, OutputIterator /* tmp_first */, OutputIterator /* tmp_last */, OutputIterator2 /* expected_first */,
-               OutputIterator2 /* expected_last */, InputIterator /* first */, InputIterator /* last */, Size /* n */, Compare /* compare */)
+                              void>::type
+    operator()(Policy&& /* exec */, OutputIterator /* tmp_first */, OutputIterator /* tmp_last */,
+               OutputIterator2 /* expected_first */, OutputIterator2 /* expected_last */, InputIterator /* first */,
+               InputIterator /* last */, Size /* n */, Compare /* compare */)
     {
     }
 };
 
-template<typename T>
+template <typename T>
 struct test_sort_without_compare
 {
 #if _PSTL_SYCL_TEST_USM
@@ -311,11 +302,8 @@ struct test_sort_without_compare
     typename ::std::enable_if<is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value &&
                                   can_use_default_less_operator<T>::value,
                               void>::type
-    test_usm(Policy&& exec,
-             OutputIterator tmp_first, OutputIterator tmp_last,
-             OutputIterator2 expected_first, OutputIterator2 expected_last,
-             InputIterator first, InputIterator /* last */,
-             Size n)
+    test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+             OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n)
     {
         using namespace std;
 
@@ -362,11 +350,8 @@ struct test_sort_without_compare
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
-    test(Policy&& exec,
-         OutputIterator tmp_first, OutputIterator tmp_last,
-         OutputIterator2 expected_first, OutputIterator2 expected_last,
-         InputIterator first, InputIterator /*last*/,
-         Size n)
+    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+         OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n)
     {
         using namespace std;
         copy_n(first, n, expected_first);
@@ -392,11 +377,8 @@ struct test_sort_without_compare
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     oneapi::dpl::__internal::__enable_if_non_host_execution_policy<Policy, void>
-    test(Policy&& exec,
-         OutputIterator tmp_first, OutputIterator tmp_last,
-         OutputIterator2 expected_first, OutputIterator2 expected_last,
-         InputIterator first, InputIterator last,
-         Size n)
+    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+         OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
     {
 #if _PSTL_SYCL_TEST_USM
         // Run tests for USM shared memory
@@ -408,24 +390,21 @@ struct test_sort_without_compare
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     typename ::std::enable_if<is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value &&
-                            can_use_default_less_operator<T>::value, void>::type
-    operator()(Policy&& exec,
-               OutputIterator tmp_first, OutputIterator tmp_last,
-               OutputIterator2 expected_first, OutputIterator2 expected_last,
-               InputIterator first, InputIterator last,
-               Size n)
+                                  can_use_default_less_operator<T>::value,
+                              void>::type
+    operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+               OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
     {
         test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     typename ::std::enable_if<!is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value ||
-                            !can_use_default_less_operator<T>::value, void>::type
-    operator()(Policy&& /* exec */,
-               OutputIterator /* tmp_first */, OutputIterator /* tmp_last */,
-               OutputIterator2 /* expected_first */, OutputIterator2 /* expected_last */,
-               InputIterator /* first */, InputIterator /* last */,
-               Size /* n */)
+                                  !can_use_default_less_operator<T>::value,
+                              void>::type
+    operator()(Policy&& /* exec */, OutputIterator /* tmp_first */, OutputIterator /* tmp_last */,
+               OutputIterator2 /* expected_first */, OutputIterator2 /* expected_last */, InputIterator /* first */,
+               InputIterator /* last */, Size /* n */)
     {
     }
 };
