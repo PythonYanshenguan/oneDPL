@@ -24,14 +24,14 @@
 #include "support/sycl_alloc_utils.h"
 #endif
 
-#define N (32)
-
 #if TEST_DPCPP_BACKEND_PRESENT
 
 template <sycl::usm::alloc alloc_type>
 void
 test_with_usm(sycl::queue& q)
 {
+    constexpr int N = 32;
+
     int h_key[N] = {};
     int h_val[N] = {};
     for (int i = 0; i < N; i++)
