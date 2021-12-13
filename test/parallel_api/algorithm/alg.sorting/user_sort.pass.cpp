@@ -79,7 +79,7 @@ int
 main()
 {
 #if TEST_DPCPP_BACKEND_PRESENT
-    auto exception_handler = [](cl::sycl::exception_list exceptions)
+    auto exception_handler = [](sycl::exception_list exceptions)
     {
         for (std::exception_ptr const& e : exceptions)
         {
@@ -87,9 +87,9 @@ main()
             {
                 std::rethrow_exception(e);
             }
-            catch (cl::sycl::exception const& e)
+            catch (sycl::exception const& e)
             {
-                std::cerr << "Caught asynchronous SYCL exception:\n" << e.what() << std::endl;
+                std::cout << "Caught asynchronous SYCL exception during calculation:\n" << e.what() << std::endl;
             }
         }
     };
