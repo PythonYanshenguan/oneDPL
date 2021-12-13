@@ -188,9 +188,9 @@ struct test_sort_with_compare
     test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
              OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n, Compare compare)
     {
-        using namespace std;
-        copy_n(first, n, expected_first);
-        copy_n(first, n, tmp_first);
+        ::std::copy_n(first, n, expected_first);
+        ::std::copy_n(first, n, tmp_first);
+
         if (Stable)
             ::std::stable_sort(expected_first + 1, expected_last - 1, compare);
         else
@@ -236,9 +236,9 @@ struct test_sort_with_compare
     test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n, Compare compare)
     {
-        using namespace std;
-        copy_n(first, n, expected_first);
-        copy_n(first, n, tmp_first);
+        ::std::copy_n(first, n, expected_first);
+        ::std::copy_n(first, n, tmp_first);
+
         if (Stable)
             ::std::stable_sort(expected_first + 1, expected_last - 1, compare);
         else
@@ -310,10 +310,8 @@ struct test_sort_without_compare
     test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
              OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n)
     {
-        using namespace std;
-
-        copy_n(first, n, expected_first);
-        copy_n(first, n, tmp_first);
+        ::std::copy_n(first, n, expected_first);
+        ::std::copy_n(first, n, tmp_first);
 
         if (Stable)
             ::std::stable_sort(expected_first + 1, expected_last - 1);
@@ -335,9 +333,9 @@ struct test_sort_without_compare
 
         int32_t count0 = KeyCount;
         if (Stable)
-            stable_sort(exec, sortingData, sortingData + size);
+            ::std::stable_sort(exec, sortingData, sortingData + size);
         else
-            sort(exec, sortingData, sortingData + size);
+            ::std::sort(exec, sortingData, sortingData + size);
 
         // check result
         dt_helper.retrieve_data(::std::addressof(*itSortFrom));
@@ -359,9 +357,9 @@ struct test_sort_without_compare
     test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n)
     {
-        using namespace std;
-        copy_n(first, n, expected_first);
-        copy_n(first, n, tmp_first);
+        ::std::copy_n(first, n, expected_first);
+        ::std::copy_n(first, n, tmp_first);
+
         if (Stable)
             ::std::stable_sort(expected_first + 1, expected_last - 1);
         else
