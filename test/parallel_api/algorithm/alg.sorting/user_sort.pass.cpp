@@ -66,15 +66,6 @@ test_with_usm(sycl::queue& q)
 
     for (int i = 0; i < N; i++)
     {
-        std::cout << "Initial"
-                  << " Key:" << h_key[i] << " Val:" << h_val[i] << std::endl;
-    }
-
-    for (int i = 0; i < N; i++)
-    {
-        std::cout << "Sorted descending"
-                  << " Key:" << h_skey[i] << " Val:" << h_sval[i] << std::endl;
-
         if (i < (N - 1))
         {
             EXPECT_TRUE(h_skey[i] >= h_skey[i + 1], "wrong sort result");
