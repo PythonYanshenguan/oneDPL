@@ -227,8 +227,8 @@ struct test_sort_with_compare
         int32_t count1 = KeyCount;
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
-#endif
-#endif
+#endif // _PSTL_SYCL_TEST_USM
+#endif // TEST_DPCPP_BACKEND_PRESENT
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
@@ -272,8 +272,8 @@ struct test_sort_with_compare
         // Run tests for USM device memory
         test_usm<sycl::usm::alloc::device>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
                                            compare);
-#endif
-#endif
+#endif // _PSTL_SYCL_TEST_USM
+#endif // TEST_DPCPP_BACKEND_PRESENT
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
@@ -351,8 +351,8 @@ struct test_sort_without_compare
         int32_t count1 = KeyCount;
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
-#endif
-#endif
+#endif // _PSTL_SYCL_TEST_USM
+#endif // TEST_DPCPP_BACKEND_PRESENT
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
@@ -392,8 +392,8 @@ struct test_sort_without_compare
         test_usm<sycl::usm::alloc::shared>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
         // Run tests for USM device memory
         test_usm<sycl::usm::alloc::device>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
-#endif
-#endif
+#endif // _PSTL_SYCL_TEST_USM
+#endif // TEST_DPCPP_BACKEND_PRESENT
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
