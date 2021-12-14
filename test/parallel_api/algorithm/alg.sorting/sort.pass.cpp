@@ -206,7 +206,7 @@ struct test_sort_with_compare
         auto queue = exec.queue();
 
         // allocate USM memory and copying data to USM shared/device memory
-        TestUtils::usm_data_transfer<alloc_type, _src_type_decay> dt_helper(queue, itSortFrom, itSortTo);
+        usm_data_transfer<alloc_type, _src_type_decay> dt_helper(queue, itSortFrom, itSortTo);
         auto sortingData = dt_helper.get_data();
 
         int32_t count0 = KeyCount;
@@ -321,7 +321,7 @@ struct test_sort_without_compare
         auto queue = exec.queue();
 
         // allocate USM memory and copying data to USM shared/device memory
-        TestUtils::usm_data_transfer<alloc_type, _src_type_decay> dt_helper(queue, itSortFrom, itSortTo);
+        usm_data_transfer<alloc_type, _src_type_decay> dt_helper(queue, itSortFrom, itSortTo);
         auto sortingData = dt_helper.get_data();
 
         int32_t count0 = KeyCount;
@@ -411,17 +411,17 @@ test_sort(Compare compare, Convert convert)
 
         // The rand()%(2*n+1) encourages generation of some duplicates.
         // Sequence is padded with an extra element at front and back, to detect overwrite bugs.
-        TestUtils::Sequence<T> in(n + 2, [=](size_t k) { return convert(k, rand() % (2 * n + 1)); });
-        TestUtils::Sequence<T> expected(in);
-        TestUtils::Sequence<T> tmp(in);
+        Sequence<T> in(n + 2, [=](size_t k) { return convert(k, rand() % (2 * n + 1)); });
+        Sequence<T> expected(in);
+        Sequence<T> tmp(in);
 
 #ifdef _PSTL_TEST_WITHOUT_PREDICATE
-        TestUtils::invoke_on_all_policies<0>()(test_sort_without_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
-                                               expected.end(), in.begin(), in.end(), in.size());
+        invoke_on_all_policies<0>()(test_sort_without_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
+                                    expected.end(), in.begin(), in.end(), in.size());
 #endif
 #ifdef _PSTL_TEST_WITH_PREDICATE
-        TestUtils::invoke_on_all_policies<1>()(test_sort_with_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
-                                               expected.end(), in.begin(), in.end(), in.size(), compare);
+        invoke_on_all_policies<1>()(test_sort_with_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
+                                    expected.end(), in.begin(), in.end(), in.size(), compare);
 #endif
     }
 }
@@ -477,5 +477,5 @@ main()
     test_algo_basic_single<std::int32_t>(run_for_rnd<test_non_const<std::int32_t>>());
 #endif
 
-    return TestUtils::done();
+    return done();
 }
