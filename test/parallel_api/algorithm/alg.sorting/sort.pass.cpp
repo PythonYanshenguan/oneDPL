@@ -219,8 +219,7 @@ struct test_sort_with_compare
         const auto _it_to = tmp_last - 1;
         const auto _size = _it_to - _it_from;
 
-        using _src_type = decltype(*_it_from);
-        using _src_type_decay = std::decay_t<_src_type>;
+        using _src_type_decay = std::iterator_traits<OutputIterator>::value_type;
 
         auto queue = exec.queue();
 
@@ -323,8 +322,7 @@ struct test_sort_without_compare
         const auto _it_to = tmp_last - 1;
         const auto _size = _it_to - _it_from;
 
-        using _src_type = decltype(*_it_from);
-        using _src_type_decay = std::decay_t<_src_type>;
+        using _src_type_decay = std::iterator_traits<OutputIterator>::value_type;
 
         auto queue = exec.queue();
 
