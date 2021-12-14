@@ -186,10 +186,6 @@ template <class _ExecPolicy, class _T>
 using __enable_if_host_execution_policy = typename ::std::enable_if<
     oneapi::dpl::__internal::__is_host_execution_policy<typename ::std::decay<_ExecPolicy>::type>::value, _T>::type;
 
-template <class _ExecPolicy, class _T>
-using __enable_if_non_host_execution_policy = typename ::std::enable_if<
-    !oneapi::dpl::__internal::__is_host_execution_policy<typename ::std::decay<_ExecPolicy>::type>::value, _T>::type;
-
 template <class _ExecPolicy, const bool __condition, class _T>
 using __enable_if_host_execution_policy_conditional = typename ::std::enable_if<
     oneapi::dpl::__internal::__is_host_execution_policy<typename ::std::decay<_ExecPolicy>::type>::value && __condition,

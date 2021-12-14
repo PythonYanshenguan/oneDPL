@@ -258,23 +258,23 @@ struct test_sort_with_compare
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
 
+#if TEST_DPCPP_BACKEND_PRESENT
+#if _PSTL_SYCL_TEST_USM
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
-    oneapi::dpl::__internal::__enable_if_non_host_execution_policy<Policy, void>
+    oneapi::dpl::__internal::__enable_if_hetero_execution_policy<Policy, void>
     test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
     {
-#if TEST_DPCPP_BACKEND_PRESENT
-#if _PSTL_SYCL_TEST_USM
         // Run tests for USM shared memory
         test_usm<sycl::usm::alloc::shared>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
                                            compare);
         // Run tests for USM device memory
         test_usm<sycl::usm::alloc::device>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
                                            compare);
+    }
 #endif // _PSTL_SYCL_TEST_USM
 #endif // TEST_DPCPP_BACKEND_PRESENT
-    }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
@@ -379,20 +379,20 @@ struct test_sort_without_compare
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
 
+#if TEST_DPCPP_BACKEND_PRESENT
+#if _PSTL_SYCL_TEST_USM
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
-    oneapi::dpl::__internal::__enable_if_non_host_execution_policy<Policy, void>
+    oneapi::dpl::__internal::__enable_if_hetero_execution_policy<Policy, void>
     test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
     {
-#if TEST_DPCPP_BACKEND_PRESENT
-#if _PSTL_SYCL_TEST_USM
         // Run tests for USM shared memory
         test_usm<sycl::usm::alloc::shared>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
         // Run tests for USM device memory
         test_usm<sycl::usm::alloc::device>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
+    }
 #endif // _PSTL_SYCL_TEST_USM
 #endif // TEST_DPCPP_BACKEND_PRESENT
-    }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     typename ::std::enable_if<is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value &&
