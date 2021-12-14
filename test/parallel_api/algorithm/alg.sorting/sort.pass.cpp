@@ -224,7 +224,7 @@ struct test_sort_with_compare
             sort(exec, sortingData, sortingData + size, compare);
 
         // check result
-        dt_helper.retrieve_data(::std::addressof(*itSortFrom));
+        dt_helper.retrieve_data(itSortFrom);
 
         for (size_t i = 0; i < n; ++i, ++expected_first, ++tmp_first)
         {
@@ -335,7 +335,7 @@ struct test_sort_without_compare
             ::std::sort(exec, sortingData, sortingData + size);
 
         // check result
-        dt_helper.retrieve_data(::std::addressof(*itSortFrom));
+        dt_helper.retrieve_data(itSortFrom);
 
         for (size_t i = 0; i < n; ++i, ++expected_first, ++tmp_first)
         {
