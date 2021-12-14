@@ -71,7 +71,7 @@ test_with_usm(sycl::queue& q)
     }
 }
 
-#endif
+#endif // #if TEST_DPCPP_BACKEND_PRESENT
 
 int
 main()
@@ -99,7 +99,7 @@ main()
     test_with_usm<sycl::usm::alloc::shared>(q);
     // Run tests for USM device memory
     test_with_usm<sycl::usm::alloc::device>(q);
-#endif
+#endif // #if TEST_DPCPP_BACKEND_PRESENT
 
     return TestUtils::done();
 }

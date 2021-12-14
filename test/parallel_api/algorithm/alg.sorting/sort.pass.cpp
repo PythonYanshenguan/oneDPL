@@ -21,13 +21,13 @@
 #if !defined(_PSTL_TEST_SORT) && !defined(_PSTL_TEST_STABLE_SORT)
 #define _PSTL_TEST_SORT
 #define _PSTL_TEST_STABLE_SORT
-#endif
+#endif // #if !defined(_PSTL_TEST_SORT) && !defined(_PSTL_TEST_STABLE_SORT)
 
 // Testing with and without predicate may be useful due to different implementations, e.g. merge-sort and radix-sort
 #if !defined(_PSTL_TEST_WITH_PREDICATE) && !defined(_PSTL_TEST_WITHOUT_PREDICATE)
 #define _PSTL_TEST_WITH_PREDICATE
 #define _PSTL_TEST_WITHOUT_PREDICATE
-#endif
+#endif // #if !defined(_PSTL_TEST_WITH_PREDICATE) && !defined(_PSTL_TEST_WITHOUT_PREDICATE)
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -49,7 +49,7 @@ class ParanoidKey;
 #if !TEST_DPCPP_BACKEND_PRESENT
 static bool
 Equal(const ParanoidKey& x, const ParanoidKey& y);
-#endif
+#endif // #if !TEST_DPCPP_BACKEND_PRESENT
 
 using namespace TestUtils;
 
@@ -111,7 +111,7 @@ class ParanoidKey
 // ::std::stable_sort() fails in move semantics on paranoid test before VS2015
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
         k.index = Empty;
-#endif
+#endif // #if !defined(_MSC_VER) || _MSC_VER >= 1900
         ++KeyCount;
     }
     ParanoidKey&
@@ -124,7 +124,7 @@ class ParanoidKey
 // ::std::stable_sort() fails in move semantics on paranoid test before VS2015
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
         k.index = Empty;
-#endif
+#endif // #if !defined(_MSC_VER) || _MSC_VER >= 1900
         return *this;
     }
     friend class KeyCompare;
@@ -162,7 +162,7 @@ Equal(const ParanoidKey& x, const ParanoidKey& y)
 {
     return (x.value == y.value && !Stable) || (x.index == y.index);
 }
-#endif
+#endif // #if !TEST_DPCPP_BACKEND_PRESENT
 
 static bool
 Equal(float32_t x, float32_t y)
@@ -432,11 +432,11 @@ test_sort(Compare compare, Convert convert)
 #ifdef _PSTL_TEST_WITHOUT_PREDICATE
         invoke_on_all_policies<0>()(test_sort_without_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
                                     expected.end(), in.begin(), in.end(), in.size());
-#endif
+#endif // #ifdef _PSTL_TEST_WITHOUT_PREDICATE
 #ifdef _PSTL_TEST_WITH_PREDICATE
         invoke_on_all_policies<1>()(test_sort_with_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
                                     expected.end(), in.begin(), in.end(), in.size(), compare);
-#endif
+#endif // #ifdef _PSTL_TEST_WITH_PREDICATE
     }
 }
 
@@ -449,10 +449,10 @@ struct test_non_const
     {
 #ifdef _PSTL_TEST_SORT
         sort(exec, iter, iter, non_const(::std::less<T>()));
-#endif
+#endif // #ifdef _PSTL_TEST_SORT
 #ifdef _PSTL_TEST_STABLE_SORT
         stable_sort(exec, iter, iter, non_const(::std::less<T>()));
-#endif
+#endif // #ifdef _PSTL_TEST_STABLE_SORT
     }
 };
 
@@ -464,10 +464,10 @@ main()
     std::int32_t end = 2;
 #ifndef _PSTL_TEST_SORT
     start = 1;
-#endif
+#endif // #ifndef _PSTL_TEST_SORT
 #ifndef _PSTL_TEST_STABLE_SORT
     end = 1;
-#endif
+#endif // #ifndef _PSTL_TEST_STABLE_SORT
     for (std::int32_t kind = start; kind < end; ++kind)
     {
         Stable = kind != 0;
@@ -476,20 +476,20 @@ main()
         // ParanoidKey has atomic increment in ctors. It's not allowed in kernel
         test_sort<ParanoidKey>(KeyCompare(OddTag()),
                                [](size_t k, size_t val) { return ParanoidKey(k, val, OddTag()); });
-#endif
+#endif // #if !TEST_DPCPP_BACKEND_PRESENT
 
 #if !ONEDPL_FPGA_DEVICE
         test_sort<float32_t>([](float32_t x, float32_t y) { return x < y; },
                              [](size_t, size_t val) { return float32_t(val); });
-#endif
+#endif // #if !ONEDPL_FPGA_DEVICE
         test_sort<std::int32_t>(
             [](std::int32_t x, std::int32_t y) { return x > y; }, // Reversed so accidental use of < will be detected.
             [](size_t, size_t val) { return std::int32_t(val); });
     }
 
 #if !ONEDPL_FPGA_DEVICE
-    test_algo_basic_single<std::int32_t>(run_for_rnd<test_non_const<std::int32_t>>());
-#endif
+    test_algo_basic_single<int32_t>(run_for_rnd<test_non_const<int32_t>>());
+#endif // #if !ONEDPL_FPGA_DEVICE
 
     return done();
 }
