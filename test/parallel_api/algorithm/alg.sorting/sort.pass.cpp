@@ -176,6 +176,20 @@ Equal(std::int32_t x, std::int32_t y)
     return x == y;
 }
 
+template <typename InputIterator, typename OutputIterator1, typename OutputIterator2, typename Compare>
+void
+prepare_data(InputIterator first, OutputIterator1 expected_first, OutputIterator1 expected_last,
+             OutputIterator2 tmp_first, Size n, Compare compare)
+{
+    ::std::copy_n(first, n, expected_first);
+    ::std::copy_n(first, n, tmp_first);
+
+    if (Stable)
+        ::std::stable_sort(expected_first + 1, expected_last - 1, compare);
+    else
+        ::std::sort(expected_first + 1, expected_last - 1, compare);
+}
+
 template <typename T>
 struct test_sort_with_compare
 {
@@ -188,13 +202,7 @@ struct test_sort_with_compare
     test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
              OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n, Compare compare)
     {
-        ::std::copy_n(first, n, expected_first);
-        ::std::copy_n(first, n, tmp_first);
-
-        if (Stable)
-            ::std::stable_sort(expected_first + 1, expected_last - 1, compare);
-        else
-            ::std::sort(expected_first + 1, expected_last - 1, compare);
+        prepare_data(first, expected_first, expected_last, tmp_first, n, compare);
 
         const auto itSortFrom = tmp_first + 1;
         const auto itSortTo = tmp_last - 1;
@@ -236,13 +244,8 @@ struct test_sort_with_compare
     test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n, Compare compare)
     {
-        ::std::copy_n(first, n, expected_first);
-        ::std::copy_n(first, n, tmp_first);
+        prepare_data(first, expected_first, expected_last, tmp_first, n, compare);
 
-        if (Stable)
-            ::std::stable_sort(expected_first + 1, expected_last - 1, compare);
-        else
-            ::std::sort(expected_first + 1, expected_last - 1, compare);
         std::int32_t count0 = KeyCount;
         if (Stable)
             stable_sort(exec, tmp_first + 1, tmp_last - 1, compare);
@@ -310,13 +313,7 @@ struct test_sort_without_compare
     test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
              OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n)
     {
-        ::std::copy_n(first, n, expected_first);
-        ::std::copy_n(first, n, tmp_first);
-
-        if (Stable)
-            ::std::stable_sort(expected_first + 1, expected_last - 1);
-        else
-            ::std::sort(expected_first + 1, expected_last - 1);
+        prepare_data(first, expected_first, expected_last, tmp_first, n, compare);
 
         const auto itSortFrom = tmp_first + 1;
         const auto itSortTo = tmp_last - 1;
@@ -357,13 +354,8 @@ struct test_sort_without_compare
     test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n)
     {
-        ::std::copy_n(first, n, expected_first);
-        ::std::copy_n(first, n, tmp_first);
+        prepare_data(first, expected_first, expected_last, tmp_first, n, compare);
 
-        if (Stable)
-            ::std::stable_sort(expected_first + 1, expected_last - 1);
-        else
-            ::std::sort(expected_first + 1, expected_last - 1);
         std::int32_t count0 = KeyCount;
         if (Stable)
             stable_sort(exec, tmp_first + 1, tmp_last - 1);
