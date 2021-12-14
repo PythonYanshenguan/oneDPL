@@ -215,27 +215,27 @@ struct test_sort_with_compare
     {
         prepare_data(first, expected_first, expected_last, tmp_first, n, compare);
 
-        const auto itSortFrom = tmp_first + 1;
-        const auto itSortTo = tmp_last - 1;
-        const auto size = itSortTo - itSortFrom;
+        const auto _it_from = tmp_first + 1;
+        const auto _it_to = tmp_last - 1;
+        const auto _size = _it_to - _it_from;
 
-        using _src_type = decltype(*itSortFrom);
+        using _src_type = decltype(*_it_from);
         using _src_type_decay = std::decay_t<_src_type>;
 
         auto queue = exec.queue();
 
         // allocate USM memory and copying data to USM shared/device memory
-        usm_data_transfer<alloc_type, _src_type_decay> dt_helper(queue, itSortFrom, itSortTo);
+        usm_data_transfer<alloc_type, _src_type_decay> dt_helper(queue, _it_from, _it_to);
         auto sortingData = dt_helper.get_data();
 
         int32_t count0 = KeyCount;
         if (Stable)
-            stable_sort(exec, sortingData, sortingData + size, compare);
+            stable_sort(exec, sortingData, sortingData + _size, compare);
         else
-            sort(exec, sortingData, sortingData + size, compare);
+            sort(exec, sortingData, sortingData + _size, compare);
 
         // check result
-        dt_helper.retrieve_data(itSortFrom);
+        dt_helper.retrieve_data(_it_from);
 
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #1");
 
@@ -319,27 +319,27 @@ struct test_sort_without_compare
     {
         prepare_data(first, expected_first, expected_last, tmp_first, n, compare);
 
-        const auto itSortFrom = tmp_first + 1;
-        const auto itSortTo = tmp_last - 1;
-        const auto size = itSortTo - itSortFrom;
+        const auto _it_from = tmp_first + 1;
+        const auto _it_to = tmp_last - 1;
+        const auto _size = _it_to - _it_from;
 
-        using _src_type = decltype(*itSortFrom);
+        using _src_type = decltype(*_it_from);
         using _src_type_decay = std::decay_t<_src_type>;
 
         auto queue = exec.queue();
 
         // allocate USM memory and copying data to USM shared/device memory
-        usm_data_transfer<alloc_type, _src_type_decay> dt_helper(queue, itSortFrom, itSortTo);
+        usm_data_transfer<alloc_type, _src_type_decay> dt_helper(queue, _it_from, _it_to);
         auto sortingData = dt_helper.get_data();
 
         int32_t count0 = KeyCount;
         if (Stable)
-            ::std::stable_sort(exec, sortingData, sortingData + size);
+            ::std::stable_sort(exec, sortingData, sortingData + _size);
         else
-            ::std::sort(exec, sortingData, sortingData + size);
+            ::std::sort(exec, sortingData, sortingData + _size);
 
         // check result
-        dt_helper.retrieve_data(itSortFrom);
+        dt_helper.retrieve_data(_it_from);
 
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #3");
 
