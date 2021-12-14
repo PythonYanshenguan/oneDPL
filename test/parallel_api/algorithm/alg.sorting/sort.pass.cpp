@@ -248,7 +248,7 @@ struct test_sort_with_compare
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
     oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
-    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+    operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n, Compare compare)
     {
         prepare_data(first, expected_first, expected_last, tmp_first, n, compare);
@@ -270,7 +270,7 @@ struct test_sort_with_compare
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
     oneapi::dpl::__internal::__enable_if_hetero_execution_policy<Policy, void>
-    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+    operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
     {
         // Run tests for USM shared memory
@@ -290,7 +290,7 @@ struct test_sort_with_compare
     operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
     {
-        test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
+        operator()(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
@@ -351,7 +351,7 @@ struct test_sort_without_compare
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
-    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+    operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n)
     {
         prepare_data(first, expected_first, expected_last, tmp_first, n, compare);
@@ -372,7 +372,7 @@ struct test_sort_without_compare
 #if _PSTL_SYCL_TEST_USM
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     oneapi::dpl::__internal::__enable_if_hetero_execution_policy<Policy, void>
-    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+    operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
     {
         // Run tests for USM shared memory
@@ -390,7 +390,7 @@ struct test_sort_without_compare
     operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
     {
-        test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
+        operator()(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
