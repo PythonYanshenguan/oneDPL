@@ -218,11 +218,7 @@ struct test_sort_with_compare
         // check result
         dt_helper.retrieve_data(::std::addressof(*itSortFrom));
 
-        for (size_t i = 0; i < n; ++i, ++expected_first, ++tmp_first)
-        {
-            // Check that expected[i] is equal to tmp[i]
-            EXPECT_TRUE(Equal(*expected_first, *tmp_first), "wrong result from sort without predicate #1");
-        }
+        EXPECT_EQ_N(expected_first, tmp_first, n, "wrong result from sort without predicate #1");
 
         int32_t count1 = KeyCount;
         EXPECT_EQ(count0, count1, "key cleanup error");
@@ -249,12 +245,9 @@ struct test_sort_with_compare
         else
             sort(exec, tmp_first + 1, tmp_last - 1, compare);
 
-        for (size_t i = 0; i < n; ++i, ++expected_first, ++tmp_first)
-        {
-            // Check that expected[i] is equal to tmp[i]
-            EXPECT_TRUE(Equal(*expected_first, *tmp_first), "wrong result from sort without predicate #2");
-        }
-        std::int32_t count1 = KeyCount;
+        EXPECT_EQ_N(expected_first, tmp_first, n, "wrong result from sort without predicate #2");
+
+        int32_t count1 = KeyCount;
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
 
@@ -340,11 +333,7 @@ struct test_sort_without_compare
         // check result
         dt_helper.retrieve_data(::std::addressof(*itSortFrom));
 
-        for (size_t i = 0; i < n; ++i, ++expected_first, ++tmp_first)
-        {
-            // Check that expected[i] is equal to tmp[i]
-            EXPECT_TRUE(Equal(*expected_first, *tmp_first), "wrong result from sort with predicate #3");
-        }
+        EXPECT_EQ_N(expected_first, tmp_first, n, "wrong result from sort with predicate #3");
 
         int32_t count1 = KeyCount;
         EXPECT_EQ(count0, count1, "key cleanup error");
@@ -370,12 +359,9 @@ struct test_sort_without_compare
         else
             sort(exec, tmp_first + 1, tmp_last - 1);
 
-        for (size_t i = 0; i < n; ++i, ++expected_first, ++tmp_first)
-        {
-            // Check that expected[i] is equal to tmp[i]
-            EXPECT_TRUE(Equal(*expected_first, *tmp_first), "wrong result from sort with predicate #4");
-        }
-        std::int32_t count1 = KeyCount;
+        EXPECT_EQ_N(expected_first, tmp_first, n, "wrong result from sort with predicate #4");
+
+        int32_t count1 = KeyCount;
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
 
