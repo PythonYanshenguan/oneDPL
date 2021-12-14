@@ -423,13 +423,11 @@ test_sort(Compare compare, Convert convert)
     for (size_t n = 0; n < 100000; n = n <= 16 ? n + 1 : size_t(3.1415 * n))
     {
         LastIndex = n + 2;
-
         // The rand()%(2*n+1) encourages generation of some duplicates.
         // Sequence is padded with an extra element at front and back, to detect overwrite bugs.
         Sequence<T> in(n + 2, [=](size_t k) { return convert(k, rand() % (2 * n + 1)); });
         Sequence<T> expected(in);
         Sequence<T> tmp(in);
-
 #ifdef _PSTL_TEST_WITHOUT_PREDICATE
         invoke_on_all_policies<0>()(test_sort_without_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
                                     expected.end(), in.begin(), in.end(), in.size());
