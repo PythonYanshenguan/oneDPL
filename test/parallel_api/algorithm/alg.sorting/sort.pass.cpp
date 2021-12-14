@@ -176,7 +176,7 @@ Equal(std::int32_t x, std::int32_t y)
     return x == y;
 }
 
-template <typename InputIterator, typename OutputIterator1, typename OutputIterator2, typename Compare>
+template <typename InputIterator, typename OutputIterator1, typename OutputIterator2, typename Size, typename Compare>
 void
 prepare_data(InputIterator first, OutputIterator1 expected_first, OutputIterator1 expected_last,
              OutputIterator2 tmp_first, Size n, Compare compare)
@@ -190,7 +190,7 @@ prepare_data(InputIterator first, OutputIterator1 expected_first, OutputIterator
         ::std::sort(expected_first + 1, expected_last - 1, compare);
 }
 
-template <typename OutputIterator1, typename OutputIterator2>
+template <typename OutputIterator1, typename OutputIterator2, typename Size>
 void
 check_results(OutputIterator1 expected_first, OutputIterator2 tmp_first, Size n, const char* error_msg)
 {
@@ -219,12 +219,12 @@ struct test_sort_with_compare
         const auto _it_to = tmp_last - 1;
         const auto _size = _it_to - _it_from;
 
-        using _src_type_decay = std::iterator_traits<OutputIterator>::value_type;
+        using _Data_Type = typename std::iterator_traits<OutputIterator>::value_type;
 
         auto queue = exec.queue();
 
         // allocate USM memory and copying data to USM shared/device memory
-        usm_data_transfer<alloc_type, _src_type_decay> dt_helper(queue, _it_from, _it_to);
+        usm_data_transfer<alloc_type, _Data_Type> dt_helper(queue, _it_from, _it_to);
         auto sortingData = dt_helper.get_data();
 
         int32_t count0 = KeyCount;
@@ -322,12 +322,12 @@ struct test_sort_without_compare
         const auto _it_to = tmp_last - 1;
         const auto _size = _it_to - _it_from;
 
-        using _src_type_decay = std::iterator_traits<OutputIterator>::value_type;
+        using _Data_Type = typename std::iterator_traits<OutputIterator>::value_type;
 
         auto queue = exec.queue();
 
         // allocate USM memory and copying data to USM shared/device memory
-        usm_data_transfer<alloc_type, _src_type_decay> dt_helper(queue, _it_from, _it_to);
+        usm_data_transfer<alloc_type, _Data_Type> dt_helper(queue, _it_from, _it_to);
         auto sortingData = dt_helper.get_data();
 
         int32_t count0 = KeyCount;
