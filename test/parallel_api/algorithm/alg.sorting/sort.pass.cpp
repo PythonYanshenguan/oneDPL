@@ -242,7 +242,7 @@ struct test_sort_with_compare
         TestUtils::usm_data_transfer<alloc_type, _Data_Type> dt_helper(queue, _it_from, _it_to);
         auto sortingData = dt_helper.get_data();
 
-        std::int32_t count0 = KeyCount;
+        const std::int32_t count0 = KeyCount;
         sort_data(exec, sortingData, sortingData + _size, compare);
 
         // check result
@@ -250,7 +250,7 @@ struct test_sort_with_compare
 
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #1");
 
-        std::int32_t count1 = KeyCount;
+        const std::int32_t count1 = KeyCount;
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
 #endif // _PSTL_SYCL_TEST_USM
@@ -265,12 +265,12 @@ struct test_sort_with_compare
         copy_data(first, expected_first, expected_last, tmp_first, n);
         sort_data(expected_first + 1, expected_last - 1, compare);
 
-        std::int32_t count0 = KeyCount;
+        const std::int32_t count0 = KeyCount;
         sort_data(exec, tmp_first + 1, tmp_last - 1, compare);
 
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #2");
 
-        std::int32_t count1 = KeyCount;
+        const std::int32_t count1 = KeyCount;
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
 
@@ -342,7 +342,7 @@ struct test_sort_without_compare
         TestUtils::usm_data_transfer<alloc_type, _Data_Type> dt_helper(queue, _it_from, _it_to);
         auto sortingData = dt_helper.get_data();
 
-        std::int32_t count0 = KeyCount;
+        const std::int32_t count0 = KeyCount;
         sort_data(exec, sortingData, sortingData + _size);
 
         // check result
@@ -350,7 +350,7 @@ struct test_sort_without_compare
 
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #3");
 
-        std::int32_t count1 = KeyCount;
+        const std::int32_t count1 = KeyCount;
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
 #endif // _PSTL_SYCL_TEST_USM
@@ -364,12 +364,12 @@ struct test_sort_without_compare
         copy_data(first, expected_first, expected_last, tmp_first, n);
         sort_data(expected_first + 1, expected_last - 1);
 
-        std::int32_t count0 = KeyCount;
+        const std::int32_t count0 = KeyCount;
         sort_data(exec, tmp_first + 1, tmp_last - 1);
 
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #4");
 
-        std::int32_t count1 = KeyCount;
+        const std::int32_t count1 = KeyCount;
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
 
