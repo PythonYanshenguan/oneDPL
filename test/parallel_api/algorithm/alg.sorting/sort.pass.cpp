@@ -174,6 +174,45 @@ Equal(std::int32_t x, std::int32_t y)
     return x == y;
 }
 
+template <typename Iterator>
+void sort_data(Iterator __from, Iterator __to)
+{
+    if (Stable)
+        ::std::stable_sort(__from, __to);
+    else
+        ::std::sort(__from, __to);
+}
+
+template <typename Iterator, typename Compare>
+void
+sort_data(Iterator __from, Iterator __to, Compare compare)
+{
+    if (Stable)
+        ::std::stable_sort(__from, __to, compare);
+    else
+        ::std::sort(__from, __to, compare);
+}
+
+template <typename Policy, typename Iterator>
+void
+sort_data(Policy&& exec, Iterator __from, Iterator __to)
+{
+    if (Stable)
+        ::std::stable_sort(exec, __from, __to);
+    else
+        ::std::sort(exec, __from, __to);
+}
+
+template <typename Policy, typename Iterator, typename Compare>
+void
+sort_data(Policy&& exec, Iterator __from, Iterator __to, Compare compare)
+{
+    if (Stable)
+        ::std::stable_sort(exec, __from, __to, compare);
+    else
+        ::std::sort(exec, __from, __to, compare);
+}
+
 template <typename InputIterator, typename OutputIterator1, typename OutputIterator2, typename Size>
 void
 prepare_data(InputIterator first, OutputIterator1 expected_first, OutputIterator1 expected_last,
@@ -182,10 +221,7 @@ prepare_data(InputIterator first, OutputIterator1 expected_first, OutputIterator
     ::std::copy_n(first, n, expected_first);
     ::std::copy_n(first, n, tmp_first);
 
-    if (Stable)
-        ::std::stable_sort(expected_first + 1, expected_last - 1);
-    else
-        ::std::sort(expected_first + 1, expected_last - 1);
+    sort_data(expected_first + 1, expected_last - 1);
 }
 
 template <typename InputIterator, typename OutputIterator1, typename OutputIterator2, typename Size, typename Compare>
@@ -196,10 +232,7 @@ prepare_data(InputIterator first, OutputIterator1 expected_first, OutputIterator
     ::std::copy_n(first, n, expected_first);
     ::std::copy_n(first, n, tmp_first);
 
-    if (Stable)
-        ::std::stable_sort(expected_first + 1, expected_last - 1, compare);
-    else
-        ::std::sort(expected_first + 1, expected_last - 1, compare);
+    sort_data(expected_first + 1, expected_last - 1, compare);
 }
 
 template <typename OutputIterator1, typename OutputIterator2, typename Size>
@@ -240,10 +273,7 @@ struct test_sort_with_compare
         auto sortingData = dt_helper.get_data();
 
         int32_t count0 = KeyCount;
-        if (Stable)
-            ::std::stable_sort(exec, sortingData, sortingData + _size, compare);
-        else
-            ::std::sort(exec, sortingData, sortingData + _size, compare);
+        sort_data(exec, sortingData, sortingData + _size, compare);
 
         // check result
         dt_helper.retrieve_data(_it_from);
@@ -265,10 +295,7 @@ struct test_sort_with_compare
         prepare_data(first, expected_first, expected_last, tmp_first, n, compare);
 
         std::int32_t count0 = KeyCount;
-        if (Stable)
-            ::std::stable_sort(exec, tmp_first + 1, tmp_last - 1, compare);
-        else
-            ::std::sort(exec, tmp_first + 1, tmp_last - 1, compare);
+        sort_data(exec, tmp_first + 1, tmp_last - 1, compare);
 
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #2");
 
@@ -344,10 +371,7 @@ struct test_sort_without_compare
         auto sortingData = dt_helper.get_data();
 
         int32_t count0 = KeyCount;
-        if (Stable)
-            ::std::stable_sort(exec, sortingData, sortingData + _size);
-        else
-            ::std::sort(exec, sortingData, sortingData + _size);
+        sort_data(exec, sortingData, sortingData + _size);
 
         // check result
         dt_helper.retrieve_data(_it_from);
@@ -368,10 +392,7 @@ struct test_sort_without_compare
         prepare_data(first, expected_first, expected_last, tmp_first, n);
 
         std::int32_t count0 = KeyCount;
-        if (Stable)
-            ::std::stable_sort(exec, tmp_first + 1, tmp_last - 1);
-        else
-            ::std::sort(exec, tmp_first + 1, tmp_last - 1);
+        sort_data(exec, tmp_first + 1, tmp_last - 1);
 
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #4");
 
