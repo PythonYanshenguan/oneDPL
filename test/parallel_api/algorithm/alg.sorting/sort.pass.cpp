@@ -243,9 +243,9 @@ struct test_sort_with_compare
 
         int32_t count0 = KeyCount;
         if (Stable)
-            stable_sort(exec, sortingData, sortingData + _size, compare);
+            ::std::stable_sort(exec, sortingData, sortingData + _size, compare);
         else
-            sort(exec, sortingData, sortingData + _size, compare);
+            ::std::sort(exec, sortingData, sortingData + _size, compare);
 
         // check result
         dt_helper.retrieve_data(_it_from);
@@ -268,9 +268,9 @@ struct test_sort_with_compare
 
         std::int32_t count0 = KeyCount;
         if (Stable)
-            stable_sort(exec, tmp_first + 1, tmp_last - 1, compare);
+            ::std::stable_sort(exec, tmp_first + 1, tmp_last - 1, compare);
         else
-            sort(exec, tmp_first + 1, tmp_last - 1, compare);
+            ::std::sort(exec, tmp_first + 1, tmp_last - 1, compare);
 
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #2");
 
@@ -370,9 +370,9 @@ struct test_sort_without_compare
 
         std::int32_t count0 = KeyCount;
         if (Stable)
-            stable_sort(exec, tmp_first + 1, tmp_last - 1);
+            ::std::stable_sort(exec, tmp_first + 1, tmp_last - 1);
         else
-            sort(exec, tmp_first + 1, tmp_last - 1);
+            ::std::sort(exec, tmp_first + 1, tmp_last - 1);
 
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #4");
 
@@ -447,10 +447,10 @@ struct test_non_const
     operator()(Policy&& exec, Iterator iter)
     {
 #ifdef _PSTL_TEST_SORT
-        sort(exec, iter, iter, non_const(::std::less<T>()));
+        ::std::sort(exec, iter, iter, non_const(::std::less<T>()));
 #endif // _PSTL_TEST_SORT
 #ifdef _PSTL_TEST_STABLE_SORT
-        stable_sort(exec, iter, iter, non_const(::std::less<T>()));
+        ::std::stable_sort(exec, iter, iter, non_const(::std::less<T>()));
 #endif // _PSTL_TEST_STABLE_SORT
     }
 };
