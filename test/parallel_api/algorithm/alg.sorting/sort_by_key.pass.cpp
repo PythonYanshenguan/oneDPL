@@ -71,7 +71,7 @@ test_with_usm(sycl::queue& q)
     }
 }
 
-#endif // #if TEST_DPCPP_BACKEND_PRESENT
+#endif // TEST_DPCPP_BACKEND_PRESENT
 
 int
 main()
@@ -95,13 +95,13 @@ main()
     sycl::queue q(exception_handler);
 #if _ONEDPL_DEBUG_SYCL
     std::cout << "    Device Name = " << q.get_device().get_info<cl::sycl::info::device::name>().c_str() << "\n";
-#endif // #if _ONEDPL_DEBUG_SYCL
+#endif // _ONEDPL_DEBUG_SYCL
 
     // Run tests for USM shared memory
     test_with_usm<sycl::usm::alloc::shared>(q);
     // Run tests for USM device memory
     test_with_usm<sycl::usm::alloc::device>(q);
-#endif // #if TEST_DPCPP_BACKEND_PRESENT
+#endif // TEST_DPCPP_BACKEND_PRESENT
 
     return TestUtils::done(TEST_DPCPP_BACKEND_PRESENT);
 }
