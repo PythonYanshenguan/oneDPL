@@ -73,22 +73,7 @@ int
 main()
 {
 #if TEST_DPCPP_BACKEND_PRESENT
-    auto exception_handler = [](sycl::exception_list exceptions)
-    {
-        for (std::exception_ptr const& e : exceptions)
-        {
-            try
-            {
-                std::rethrow_exception(e);
-            }
-            catch (sycl::exception const& e)
-            {
-                std::cout << "Caught asynchronous SYCL exception during calculation:\n" << e.what() << std::endl;
-            }
-        }
-    };
-
-    sycl::queue q(exception_handler);
+    sycl::queue q;
 #if _ONEDPL_DEBUG_SYCL
     std::cout << "    Device Name = " << q.get_device().get_info<cl::sycl::info::device::name>().c_str() << "\n";
 #endif // _ONEDPL_DEBUG_SYCL
