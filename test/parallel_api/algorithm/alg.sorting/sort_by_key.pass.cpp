@@ -45,7 +45,7 @@ test_with_usm(sycl::queue& q)
     int* d_val = dt_helper_h_val.get_data();
 
     auto first = oneapi::dpl::make_zip_iterator(d_key, d_val);
-    auto last = first + std::distance(d_key, d_key + N);
+    auto last = first + N;
 
     auto myPolicy = oneapi::dpl::execution::make_device_policy<
         TestUtils::unique_kernel_name<class copy, (::std::size_t)alloc_type>>(q);
