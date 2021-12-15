@@ -51,8 +51,6 @@ static bool
 Equal(const ParanoidKey& x, const ParanoidKey& y);
 #endif // !TEST_DPCPP_BACKEND_PRESENT
 
-using namespace TestUtils;
-
 //! A key to be sorted, with lots of checking.
 class ParanoidKey
 {
@@ -104,7 +102,7 @@ class ParanoidKey
         index = k.index;
         return *this;
     }
-    ParanoidKey(std::int32_t index, std::int32_t value, OddTag) : value(value), index(index) {}
+    ParanoidKey(std::int32_t index, std::int32_t value, TestUtils::OddTag) : value(value), index(index) {}
     ParanoidKey(ParanoidKey&& k) : value(k.value), index(k.index)
     {
         EXPECT_TRUE(k.isConstructed(), "source for move-construction is dead");
@@ -143,7 +141,7 @@ class KeyCompare
     } status;
 
   public:
-    KeyCompare(OddTag) : status(Live) {}
+    KeyCompare(TestUtils::OddTag) : status(Live) {}
     ~KeyCompare() { status = Dead; }
     bool
     operator()(const ParanoidKey& j, const ParanoidKey& k) const
@@ -165,7 +163,7 @@ Equal(const ParanoidKey& x, const ParanoidKey& y)
 #endif // !TEST_DPCPP_BACKEND_PRESENT
 
 static bool
-Equal(float32_t x, float32_t y)
+Equal(TestUtils::float32_t x, TestUtils::float32_t y)
 {
     return x == y;
 }
@@ -222,7 +220,7 @@ struct test_sort_with_compare
 #if _PSTL_SYCL_TEST_USM
     template <sycl::usm::alloc alloc_type, typename Policy, typename InputIterator, typename OutputIterator,
               typename OutputIterator2, typename Size, typename Compare>
-    typename ::std::enable_if<is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
+    typename ::std::enable_if<TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
                               void>::type
     test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
              OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n, Compare compare)
@@ -238,7 +236,7 @@ struct test_sort_with_compare
         auto queue = exec.queue();
 
         // allocate USM memory and copying data to USM shared/device memory
-        usm_data_transfer<alloc_type, _Data_Type> dt_helper(queue, _it_from, _it_to);
+        TestUtils::usm_data_transfer<alloc_type, _Data_Type> dt_helper(queue, _it_from, _it_to);
         auto sortingData = dt_helper.get_data();
 
         int32_t count0 = KeyCount;
@@ -298,7 +296,7 @@ struct test_sort_with_compare
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
-    typename ::std::enable_if<is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
+    typename ::std::enable_if<TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
                               void>::type
     operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
@@ -308,7 +306,7 @@ struct test_sort_with_compare
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
-    typename ::std::enable_if<!is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
+    typename ::std::enable_if<!TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
                               void>::type
     operator()(Policy&& /* exec */, OutputIterator /* tmp_first */, OutputIterator /* tmp_last */,
                OutputIterator2 /* expected_first */, OutputIterator2 /* expected_last */, InputIterator /* first */,
@@ -324,9 +322,10 @@ struct test_sort_without_compare
 #if _PSTL_SYCL_TEST_USM
     template <sycl::usm::alloc alloc_type, typename Policy, typename InputIterator, typename OutputIterator,
               typename OutputIterator2, typename Size>
-    typename ::std::enable_if<is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value &&
-                                  can_use_default_less_operator<T>::value,
-                              void>::type
+    typename ::std::enable_if<
+        TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value &&
+            TestUtils::can_use_default_less_operator<T>::value,
+        void>::type
     test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
              OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n)
     {
@@ -341,7 +340,7 @@ struct test_sort_without_compare
         auto queue = exec.queue();
 
         // allocate USM memory and copying data to USM shared/device memory
-        usm_data_transfer<alloc_type, _Data_Type> dt_helper(queue, _it_from, _it_to);
+        TestUtils::usm_data_transfer<alloc_type, _Data_Type> dt_helper(queue, _it_from, _it_to);
         auto sortingData = dt_helper.get_data();
 
         int32_t count0 = KeyCount;
@@ -396,8 +395,8 @@ struct test_sort_without_compare
 #endif // TEST_DPCPP_BACKEND_PRESENT
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
-    typename ::std::enable_if<is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value &&
-                                  can_use_default_less_operator<T>::value,
+    typename ::std::enable_if<TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value &&
+                                  TestUtils::can_use_default_less_operator<T>::value,
                               void>::type
     operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
@@ -406,8 +405,8 @@ struct test_sort_without_compare
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
-    typename ::std::enable_if<!is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value ||
-                                  !can_use_default_less_operator<T>::value,
+    typename ::std::enable_if<!TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value ||
+                                  !TestUtils::can_use_default_less_operator<T>::value,
                               void>::type
     operator()(Policy&& /* exec */, OutputIterator /* tmp_first */, OutputIterator /* tmp_last */,
                OutputIterator2 /* expected_first */, OutputIterator2 /* expected_last */, InputIterator /* first */,
@@ -425,16 +424,16 @@ test_sort(Compare compare, Convert convert)
         LastIndex = n + 2;
         // The rand()%(2*n+1) encourages generation of some duplicates.
         // Sequence is padded with an extra element at front and back, to detect overwrite bugs.
-        Sequence<T> in(n + 2, [=](size_t k) { return convert(k, rand() % (2 * n + 1)); });
-        Sequence<T> expected(in);
-        Sequence<T> tmp(in);
+        TestUtils::Sequence<T> in(n + 2, [=](size_t k) { return convert(k, rand() % (2 * n + 1)); });
+        TestUtils::Sequence<T> expected(in);
+        TestUtils::Sequence<T> tmp(in);
 #ifdef _PSTL_TEST_WITHOUT_PREDICATE
-        invoke_on_all_policies<0>()(test_sort_without_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
-                                    expected.end(), in.begin(), in.end(), in.size());
+        TestUtils::invoke_on_all_policies<0>()(test_sort_without_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
+                                               expected.end(), in.begin(), in.end(), in.size());
 #endif // _PSTL_TEST_WITHOUT_PREDICATE
 #ifdef _PSTL_TEST_WITH_PREDICATE
-        invoke_on_all_policies<1>()(test_sort_with_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
-                                    expected.end(), in.begin(), in.end(), in.size(), compare);
+        TestUtils::invoke_on_all_policies<1>()(test_sort_with_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
+                                               expected.end(), in.begin(), in.end(), in.size(), compare);
 #endif // _PSTL_TEST_WITH_PREDICATE
     }
 }
@@ -447,10 +446,10 @@ struct test_non_const
     operator()(Policy&& exec, Iterator iter)
     {
 #ifdef _PSTL_TEST_SORT
-        ::std::sort(exec, iter, iter, non_const(::std::less<T>()));
+        ::std::sort(exec, iter, iter, TestUtils::non_const(::std::less<T>()));
 #endif // _PSTL_TEST_SORT
 #ifdef _PSTL_TEST_STABLE_SORT
-        ::std::stable_sort(exec, iter, iter, non_const(::std::less<T>()));
+        ::std::stable_sort(exec, iter, iter, TestUtils::non_const(::std::less<T>()));
 #endif // _PSTL_TEST_STABLE_SORT
     }
 };
@@ -473,13 +472,13 @@ main()
 
 #if !TEST_DPCPP_BACKEND_PRESENT
         // ParanoidKey has atomic increment in ctors. It's not allowed in kernel
-        test_sort<ParanoidKey>(KeyCompare(OddTag()),
-                               [](size_t k, size_t val) { return ParanoidKey(k, val, OddTag()); });
+        test_sort<ParanoidKey>(KeyCompare(TestUtils::OddTag()),
+                               [](size_t k, size_t val) { return ParanoidKey(k, val, TestUtils::OddTag()); });
 #endif // !TEST_DPCPP_BACKEND_PRESENT
 
 #if !ONEDPL_FPGA_DEVICE
-        test_sort<float32_t>([](float32_t x, float32_t y) { return x < y; },
-                             [](size_t, size_t val) { return float32_t(val); });
+        test_sort<TestUtils::float32_t>([](TestUtils::float32_t x, TestUtils::float32_t y) { return x < y; },
+                                        [](size_t, size_t val) { return TestUtils::float32_t(val); });
 #endif // !ONEDPL_FPGA_DEVICE
         test_sort<std::int32_t>(
             [](std::int32_t x, std::int32_t y) { return x > y; }, // Reversed so accidental use of < will be detected.
@@ -487,8 +486,8 @@ main()
     }
 
 #if !ONEDPL_FPGA_DEVICE
-    test_algo_basic_single<int32_t>(run_for_rnd<test_non_const<int32_t>>());
+    TestUtils::test_algo_basic_single<int32_t>(TestUtils::run_for_rnd<test_non_const<int32_t>>());
 #endif // !ONEDPL_FPGA_DEVICE
 
-    return done();
+    return TestUtils::done();
 }
