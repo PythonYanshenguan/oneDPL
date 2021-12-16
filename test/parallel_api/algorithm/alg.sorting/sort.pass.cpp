@@ -183,7 +183,10 @@ copy_data(InputIterator first, OutputIterator1 expected_first, OutputIterator1 e
     ::std::copy_n(first, n, tmp_first);
 }
 
-template <typename Iterator, typename Compare = ::std::less<typename std::iterator_traits<Iterator>::value_type>>
+template <typename Iterator>
+using __it_deref_less = ::std::less<typename std::iterator_traits<Iterator>::value_type>;
+
+template <typename Iterator, typename Compare = __it_deref_less<Iterator>>
 void
 sort_data(Iterator __from, Iterator __to, Compare compare = {})
 {
@@ -193,8 +196,7 @@ sort_data(Iterator __from, Iterator __to, Compare compare = {})
         ::std::sort(__from, __to, compare);
 }
 
-template <typename Policy, typename Iterator,
-          typename Compare = ::std::less<typename std::iterator_traits<Iterator>::value_type>>
+template <typename Policy, typename Iterator, typename Compare = __it_deref_less<Iterator>>
 void
 sort_data(Policy&& exec, Iterator __from, Iterator __to, Compare compare = {})
 {
@@ -219,7 +221,7 @@ template <typename T>
 struct test_sort_base
 {
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
-              typename Compare = ::std::less<typename std::iterator_traits<OutputIterator2>::value_type>>
+              typename Compare = __it_deref_less<OutputIterator2>>
     oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
     test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n, Compare compare = {})
@@ -239,8 +241,7 @@ struct test_sort_base
 #if TEST_DPCPP_BACKEND_PRESENT
 #if _PSTL_SYCL_TEST_USM
     template <sycl::usm::alloc alloc_type, typename Policy, typename InputIterator, typename OutputIterator,
-              typename OutputIterator2, typename Size,
-              typename Compare = ::std::less<typename std::iterator_traits<OutputIterator2>::value_type>>
+              typename OutputIterator2, typename Size, typename Compare = __it_deref_less<OutputIterator2>>
     typename ::std::enable_if<
         TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value, void>::type
     test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
@@ -274,7 +275,7 @@ struct test_sort_base
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
-              typename Compare = ::std::less<typename std::iterator_traits<OutputIterator2>::value_type>>
+              typename Compare = __it_deref_less<OutputIterator2>>
     oneapi::dpl::__internal::__enable_if_hetero_execution_policy<Policy, void>
     test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
          OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare = {})
