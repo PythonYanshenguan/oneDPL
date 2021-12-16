@@ -387,7 +387,7 @@ main()
 #endif // #ifndef _PSTL_TEST_SORT
 #ifndef _PSTL_TEST_STABLE_SORT
     end = 1;
-#endif // #ifndef _PSTL_TEST_STABLE_SORT
+#endif // _PSTL_TEST_STABLE_SORT
     for (std::int32_t kind = start; kind < end; ++kind)
     {
         Stable = kind != 0;
