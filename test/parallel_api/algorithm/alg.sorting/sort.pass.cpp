@@ -216,16 +216,35 @@ check_results(OutputIterator1 expected_first, OutputIterator2 tmp_first, Size n,
 }
 
 template <typename T>
-struct test_sort_with_compare
+struct test_sort_base
 {
+    template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
+              typename Compare = ::std::less<typename std::iterator_traits<OutputIterator2>::value_type>>
+    oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
+    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+         OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n, Compare compare = {})
+    {
+        copy_data(first, expected_first, expected_last, tmp_first, n);
+        sort_data(expected_first + 1, expected_last - 1, compare);
+
+        const std::int32_t count0 = KeyCount;
+        sort_data(exec, tmp_first + 1, tmp_last - 1, compare);
+
+        check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #1");
+
+        const std::int32_t count1 = KeyCount;
+        EXPECT_EQ(count0, count1, "key cleanup error");
+    }
+
 #if TEST_DPCPP_BACKEND_PRESENT
 #if _PSTL_SYCL_TEST_USM
     template <sycl::usm::alloc alloc_type, typename Policy, typename InputIterator, typename OutputIterator,
-              typename OutputIterator2, typename Size, typename Compare>
-    typename ::std::enable_if<TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
-                              void>::type
+              typename OutputIterator2, typename Size,
+              typename Compare = ::std::less<typename std::iterator_traits<OutputIterator2>::value_type>>
+    typename ::std::enable_if<
+        TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value, void>::type
     test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-             OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n, Compare compare)
+             OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n, Compare compare = {})
     {
         copy_data(first, expected_first, expected_last, tmp_first, n);
         sort_data(expected_first + 1, expected_last - 1, compare);
@@ -248,39 +267,17 @@ struct test_sort_with_compare
         // check result
         dt_helper.retrieve_data(_it_from);
 
-        check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #1");
-
-        const std::int32_t count1 = KeyCount;
-        EXPECT_EQ(count0, count1, "key cleanup error");
-    }
-#endif // _PSTL_SYCL_TEST_USM
-#endif // TEST_DPCPP_BACKEND_PRESENT
-
-    template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
-              typename Compare>
-    oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
-    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-         OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n, Compare compare)
-    {
-        copy_data(first, expected_first, expected_last, tmp_first, n);
-        sort_data(expected_first + 1, expected_last - 1, compare);
-
-        const std::int32_t count0 = KeyCount;
-        sort_data(exec, tmp_first + 1, tmp_last - 1, compare);
-
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #2");
 
         const std::int32_t count1 = KeyCount;
         EXPECT_EQ(count0, count1, "key cleanup error");
     }
 
-#if TEST_DPCPP_BACKEND_PRESENT
-#if _PSTL_SYCL_TEST_USM
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
-              typename Compare>
+              typename Compare = ::std::less<typename std::iterator_traits<OutputIterator2>::value_type>>
     oneapi::dpl::__internal::__enable_if_hetero_execution_policy<Policy, void>
     test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-         OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
+         OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare = {})
     {
         // Run tests for USM shared memory
         test_usm<sycl::usm::alloc::shared>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
@@ -291,7 +288,11 @@ struct test_sort_with_compare
     }
 #endif // _PSTL_SYCL_TEST_USM
 #endif // TEST_DPCPP_BACKEND_PRESENT
+};
 
+template <typename T>
+struct test_sort_with_compare : test_sort_base<T>
+{
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
     typename ::std::enable_if<TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
@@ -299,7 +300,7 @@ struct test_sort_with_compare
     operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
     {
-        test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
+        test_sort_base<T>::template test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
@@ -314,80 +315,8 @@ struct test_sort_with_compare
 };
 
 template <typename T>
-struct test_sort_without_compare
+struct test_sort_without_compare : test_sort_base<T>
 {
-#if TEST_DPCPP_BACKEND_PRESENT
-#if _PSTL_SYCL_TEST_USM
-    template <sycl::usm::alloc alloc_type, typename Policy, typename InputIterator, typename OutputIterator,
-              typename OutputIterator2, typename Size>
-    typename ::std::enable_if<
-        TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value &&
-            TestUtils::can_use_default_less_operator<T>::value,
-        void>::type
-    test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-             OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n)
-    {
-        copy_data(first, expected_first, expected_last, tmp_first, n);
-        sort_data(expected_first + 1, expected_last - 1);
-
-        const auto _it_from = tmp_first + 1;
-        const auto _it_to = tmp_last - 1;
-        const auto _size = _it_to - _it_from;
-
-        using _Data_Type = typename std::iterator_traits<OutputIterator>::value_type;
-
-        auto queue = exec.queue();
-
-        // allocate USM memory and copying data to USM shared/device memory
-        TestUtils::usm_data_transfer<alloc_type, _Data_Type> dt_helper(queue, _it_from, _it_to);
-        auto sortingData = dt_helper.get_data();
-
-        const std::int32_t count0 = KeyCount;
-        sort_data(exec, sortingData, sortingData + _size);
-
-        // check result
-        dt_helper.retrieve_data(_it_from);
-
-        check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #3");
-
-        const std::int32_t count1 = KeyCount;
-        EXPECT_EQ(count0, count1, "key cleanup error");
-    }
-#endif // _PSTL_SYCL_TEST_USM
-#endif // TEST_DPCPP_BACKEND_PRESENT
-
-    template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
-    oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
-    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-         OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n)
-    {
-        copy_data(first, expected_first, expected_last, tmp_first, n);
-        sort_data(expected_first + 1, expected_last - 1);
-
-        const std::int32_t count0 = KeyCount;
-        sort_data(exec, tmp_first + 1, tmp_last - 1);
-
-        check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #4");
-
-        const std::int32_t count1 = KeyCount;
-        EXPECT_EQ(count0, count1, "key cleanup error");
-    }
-
-#if TEST_DPCPP_BACKEND_PRESENT
-#if _PSTL_SYCL_TEST_USM
-    template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
-    oneapi::dpl::__internal::__enable_if_hetero_execution_policy<Policy, void>
-    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-         OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
-    {
-        // Run tests for USM shared memory
-        test_usm<sycl::usm::alloc::shared>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
-        // Run tests for USM device memory
-        test_usm<sycl::usm::alloc::device>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
-    }
-#endif // _PSTL_SYCL_TEST_USM
-#endif // TEST_DPCPP_BACKEND_PRESENT
-
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     typename ::std::enable_if<TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value &&
                                   TestUtils::can_use_default_less_operator<T>::value,
@@ -395,7 +324,7 @@ struct test_sort_without_compare
     operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
     {
-        test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
+        test_sort_base<T>::template test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
