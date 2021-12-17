@@ -289,7 +289,7 @@ struct test_sort_base
 };
 
 template <typename T>
-struct test_sort_with_compare
+struct test_sort_run_test
 {
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
@@ -312,31 +312,6 @@ struct test_sort_with_compare
     }
 };
 
-template <typename T>
-struct test_sort_without_compare
-{
-    template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
-    typename ::std::enable_if<TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value &&
-                                  TestUtils::can_use_default_less_operator<T>::value,
-                              void>::type
-    operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-               OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
-    {
-        test_sort_base<T>().run_test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
-                                     ::std::less<typename std::iterator_traits<OutputIterator2>::value_type>());
-    }
-
-    template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
-    typename ::std::enable_if<!TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value ||
-                                  !TestUtils::can_use_default_less_operator<T>::value,
-                              void>::type
-    operator()(Policy&& /* exec */, OutputIterator /* tmp_first */, OutputIterator /* tmp_last */,
-               OutputIterator2 /* expected_first */, OutputIterator2 /* expected_last */, InputIterator /* first */,
-               InputIterator /* last */, Size /* n */)
-    {
-    }
-};
-
 template <typename T, typename Compare, typename Convert>
 void
 test_sort(Compare compare, Convert convert)
@@ -350,11 +325,11 @@ test_sort(Compare compare, Convert convert)
         TestUtils::Sequence<T> expected(in);
         TestUtils::Sequence<T> tmp(in);
 #ifdef _PSTL_TEST_WITHOUT_PREDICATE
-        TestUtils::invoke_on_all_policies<0>()(test_sort_without_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
-                                               expected.end(), in.begin(), in.end(), in.size());
+        TestUtils::invoke_on_all_policies<0>()(test_sort_run_test<T>(), tmp.begin(), tmp.end(), expected.begin(),
+                                               expected.end(), in.begin(), in.end(), in.size(), ::std::less<T>());
 #endif // _PSTL_TEST_WITHOUT_PREDICATE
 #ifdef _PSTL_TEST_WITH_PREDICATE
-        TestUtils::invoke_on_all_policies<1>()(test_sort_with_compare<T>(), tmp.begin(), tmp.end(), expected.begin(),
+        TestUtils::invoke_on_all_policies<1>()(test_sort_run_test<T>(), tmp.begin(), tmp.end(), expected.begin(),
                                                expected.end(), in.begin(), in.end(), in.size(), compare);
 #endif // _PSTL_TEST_WITH_PREDICATE
     }
