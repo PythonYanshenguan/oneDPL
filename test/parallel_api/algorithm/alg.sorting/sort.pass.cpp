@@ -220,8 +220,8 @@ struct test_sort_base
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
     oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
-    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-         OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n, Compare compare)
+    run_test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+             OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n, Compare compare)
     {
         copy_data(first, expected_first, expected_last, tmp_first, n);
         sort_data(expected_first + 1, expected_last - 1, compare);
@@ -274,8 +274,8 @@ struct test_sort_base
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
     oneapi::dpl::__internal::__enable_if_hetero_execution_policy<Policy, void>
-    test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-         OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
+    run_test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
+             OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
     {
         // Run tests for USM shared memory
         test_usm<sycl::usm::alloc::shared>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
@@ -298,7 +298,7 @@ struct test_sort_with_compare
     operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
     {
-        test_sort_base<T>().test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
+        test_sort_base<T>().run_test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
@@ -322,8 +322,8 @@ struct test_sort_without_compare
     operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
     {
-        test_sort_base<T>().test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
-                                 ::std::less<typename std::iterator_traits<OutputIterator2>::value_type>());
+        test_sort_base<T>().run_test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
+                                     ::std::less<typename std::iterator_traits<OutputIterator2>::value_type>());
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
