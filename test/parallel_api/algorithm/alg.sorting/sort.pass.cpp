@@ -174,52 +174,53 @@ Equal(std::int32_t x, std::int32_t y)
     return x == y;
 }
 
-template <typename InputIterator, typename OutputIterator1, typename OutputIterator2, typename Size>
-void
-copy_data(InputIterator first, OutputIterator1 expected_first, OutputIterator1 expected_last, OutputIterator2 tmp_first,
-          Size n)
-{
-    ::std::copy_n(first, n, expected_first);
-    ::std::copy_n(first, n, tmp_first);
-}
-
-template <typename Iterator>
-using __it_deref_less = ::std::less<typename std::iterator_traits<Iterator>::value_type>;
-
-template <typename Iterator, typename Compare = __it_deref_less<Iterator>>
-void
-sort_data(Iterator __from, Iterator __to, Compare compare = {})
-{
-    if (Stable)
-        ::std::stable_sort(__from, __to, compare);
-    else
-        ::std::sort(__from, __to, compare);
-}
-
-template <typename Policy, typename Iterator, typename Compare = __it_deref_less<Iterator>>
-void
-sort_data(Policy&& exec, Iterator __from, Iterator __to, Compare compare = {})
-{
-    if (Stable)
-        ::std::stable_sort(exec, __from, __to, compare);
-    else
-        ::std::sort(exec, __from, __to, compare);
-}
-
-template <typename OutputIterator1, typename OutputIterator2, typename Size>
-void
-check_results(OutputIterator1 expected_first, OutputIterator2 tmp_first, Size n, const char* error_msg)
-{
-    for (size_t i = 0; i < n; ++i, ++expected_first, ++tmp_first)
-    {
-        // Check that expected[i] is equal to tmp[i]
-        EXPECT_TRUE(Equal(*expected_first, *tmp_first), error_msg);
-    }
-}
-
 template <typename T>
 struct test_sort_base
 {
+    template <typename Iterator>
+    using __it_deref_less = ::std::less<typename std::iterator_traits<Iterator>::value_type>;
+
+
+    template <typename InputIterator, typename OutputIterator1, typename OutputIterator2, typename Size>
+    void
+    copy_data(InputIterator first, OutputIterator1 expected_first, OutputIterator1 expected_last,
+              OutputIterator2 tmp_first, Size n)
+    {
+        ::std::copy_n(first, n, expected_first);
+        ::std::copy_n(first, n, tmp_first);
+    }
+
+    template <typename Iterator, typename Compare = __it_deref_less<Iterator>>
+    void
+    sort_data(Iterator __from, Iterator __to, Compare compare = {})
+    {
+        if (Stable)
+            ::std::stable_sort(__from, __to, compare);
+        else
+            ::std::sort(__from, __to, compare);
+    }
+
+    template <typename Policy, typename Iterator, typename Compare = __it_deref_less<Iterator>>
+    void
+    sort_data(Policy&& exec, Iterator __from, Iterator __to, Compare compare = {})
+    {
+        if (Stable)
+            ::std::stable_sort(exec, __from, __to, compare);
+        else
+            ::std::sort(exec, __from, __to, compare);
+    }
+
+    template <typename OutputIterator1, typename OutputIterator2, typename Size>
+    void
+    check_results(OutputIterator1 expected_first, OutputIterator2 tmp_first, Size n, const char* error_msg)
+    {
+        for (size_t i = 0; i < n; ++i, ++expected_first, ++tmp_first)
+        {
+            // Check that expected[i] is equal to tmp[i]
+            EXPECT_TRUE(Equal(*expected_first, *tmp_first), error_msg);
+        }
+    }
+
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare = __it_deref_less<OutputIterator2>>
     oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
@@ -292,7 +293,7 @@ struct test_sort_base
 };
 
 template <typename T>
-struct test_sort_with_compare : test_sort_base<T>
+struct test_sort_with_compare
 {
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Compare>
@@ -301,7 +302,7 @@ struct test_sort_with_compare : test_sort_base<T>
     operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
     {
-        test_sort_base<T>::template test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
+        test_sort_base<T>().test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
@@ -316,7 +317,7 @@ struct test_sort_with_compare : test_sort_base<T>
 };
 
 template <typename T>
-struct test_sort_without_compare : test_sort_base<T>
+struct test_sort_without_compare
 {
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     typename ::std::enable_if<TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value &&
@@ -325,7 +326,7 @@ struct test_sort_without_compare : test_sort_base<T>
     operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n)
     {
-        test_sort_base<T>::template test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
+        test_sort_base<T>().test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n);
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
