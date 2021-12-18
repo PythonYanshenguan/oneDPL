@@ -186,24 +186,24 @@ struct test_sort_base
         ::std::copy_n(first, n, tmp_first);
     }
 
-    template <typename Iterator, typename Compare>
+    template <typename Iterator, typename ...Compare>
     void
-    sort_data(Iterator __from, Iterator __to, Compare compare)
+    sort_data(Iterator __from, Iterator __to, Compare&& ...compare)
     {
         if (Stable)
-            ::std::stable_sort(__from, __to, compare);
+            ::std::stable_sort(__from, __to, ::std::forward<Compare>(compare)...);
         else
-            ::std::sort(__from, __to, compare);
+            ::std::sort(__from, __to, ::std::forward<Compare>(compare)...);
     }
 
-    template <typename Policy, typename Iterator, typename Compare>
+    template <typename Policy, typename Iterator, typename ...Compare>
     void
-    sort_data(Policy&& exec, Iterator __from, Iterator __to, Compare compare)
+    sort_data(Policy&& exec, Iterator __from, Iterator __to, Compare&& ...compare)
     {
         if (Stable)
-            ::std::stable_sort(exec, __from, __to, compare);
+            ::std::stable_sort(exec, __from, __to, ::std::forward<Compare>(compare)...);
         else
-            ::std::sort(exec, __from, __to, compare);
+            ::std::sort(exec, __from, __to, ::std::forward<Compare>(compare)...);
     }
 
     template <typename OutputIterator1, typename OutputIterator2, typename Size>
@@ -218,16 +218,16 @@ struct test_sort_base
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
-              typename Compare>
+              typename ...Compare>
     oneapi::dpl::__internal::__enable_if_host_execution_policy<Policy, void>
     run_test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-             OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n, Compare compare)
+             OutputIterator2 expected_last, InputIterator first, InputIterator /*last*/, Size n, Compare&& ...compare)
     {
         copy_data(first, expected_first, expected_last, tmp_first, n);
-        sort_data(expected_first + 1, expected_last - 1, compare);
+        sort_data(expected_first + 1, expected_last - 1, ::std::forward<Compare>(compare)...);
 
         const std::int32_t count0 = KeyCount;
-        sort_data(exec, tmp_first + 1, tmp_last - 1, compare);
+        sort_data(exec, tmp_first + 1, tmp_last - 1, ::std::forward<Compare>(compare)...);
 
         check_results(expected_first, tmp_first, n, "wrong result from sort without predicate #1");
 
@@ -238,14 +238,14 @@ struct test_sort_base
 #if TEST_DPCPP_BACKEND_PRESENT
 #if _PSTL_SYCL_TEST_USM
     template <sycl::usm::alloc alloc_type, typename Policy, typename InputIterator, typename OutputIterator,
-              typename OutputIterator2, typename Size, typename Compare>
+              typename OutputIterator2, typename Size, typename ...Compare>
     typename ::std::enable_if<
         TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value, void>::type
     test_usm(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-             OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n, Compare compare)
+             OutputIterator2 expected_last, InputIterator first, InputIterator /* last */, Size n, Compare&& ...compare)
     {
         copy_data(first, expected_first, expected_last, tmp_first, n);
-        sort_data(expected_first + 1, expected_last - 1, compare);
+        sort_data(expected_first + 1, expected_last - 1, ::std::forward<Compare>(compare)...);
 
         const auto _it_from = tmp_first + 1;
         const auto _it_to = tmp_last - 1;
@@ -260,7 +260,7 @@ struct test_sort_base
         auto sortingData = dt_helper.get_data();
 
         const std::int32_t count0 = KeyCount;
-        sort_data(exec, sortingData, sortingData + _size, compare);
+        sort_data(exec, sortingData, sortingData + _size, ::std::forward<Compare>(compare)...);
 
         // check result
         dt_helper.retrieve_data(_it_from);
@@ -272,17 +272,17 @@ struct test_sort_base
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
-              typename Compare>
+              typename ...Compare>
     oneapi::dpl::__internal::__enable_if_hetero_execution_policy<Policy, void>
     run_test(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-             OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
+             OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare&& ...compare)
     {
         // Run tests for USM shared memory
         test_usm<sycl::usm::alloc::shared>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
-                                           compare);
+                                          ::std::forward<Compare>(compare)...);
         // Run tests for USM device memory
         test_usm<sycl::usm::alloc::device>(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n,
-                                           compare);
+                                          ::std::forward<Compare>(compare)...);
     }
 #endif // _PSTL_SYCL_TEST_USM
 #endif // TEST_DPCPP_BACKEND_PRESENT
@@ -292,22 +292,22 @@ template <typename T>
 struct test_sort_run_test
 {
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
-              typename Compare>
+              typename ...Compare>
     typename ::std::enable_if<TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
                               void>::type
     operator()(Policy&& exec, OutputIterator tmp_first, OutputIterator tmp_last, OutputIterator2 expected_first,
-               OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare compare)
+               OutputIterator2 expected_last, InputIterator first, InputIterator last, Size n, Compare&& ...compare)
     {
-        test_sort_base<T>().run_test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, compare);
+        test_sort_base<T>().run_test(exec, tmp_first, tmp_last, expected_first, expected_last, first, last, n, ::std::forward<Compare>(compare)...);
     }
 
     template <typename Policy, typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
-              typename Compare>
+              typename ...Compare>
     typename ::std::enable_if<!TestUtils::is_base_of_iterator_category<::std::random_access_iterator_tag, InputIterator>::value,
                               void>::type
     operator()(Policy&& /* exec */, OutputIterator /* tmp_first */, OutputIterator /* tmp_last */,
                OutputIterator2 /* expected_first */, OutputIterator2 /* expected_last */, InputIterator /* first */,
-               InputIterator /* last */, Size /* n */, Compare /* compare */)
+               InputIterator /* last */, Size /* n */, Compare&& .../*compare*/)
     {
     }
 };
@@ -326,7 +326,7 @@ test_sort(Compare compare, Convert convert)
         TestUtils::Sequence<T> tmp(in);
 #ifdef _PSTL_TEST_WITHOUT_PREDICATE
         TestUtils::invoke_on_all_policies<0>()(test_sort_run_test<T>(), tmp.begin(), tmp.end(), expected.begin(),
-                                               expected.end(), in.begin(), in.end(), in.size(), ::std::less<T>());
+                                               expected.end(), in.begin(), in.end(), in.size());
 #endif // _PSTL_TEST_WITHOUT_PREDICATE
 #ifdef _PSTL_TEST_WITH_PREDICATE
         TestUtils::invoke_on_all_policies<1>()(test_sort_run_test<T>(), tmp.begin(), tmp.end(), expected.begin(),
