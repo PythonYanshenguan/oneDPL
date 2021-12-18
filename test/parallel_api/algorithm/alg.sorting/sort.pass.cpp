@@ -251,12 +251,12 @@ struct test_sort_base
         const auto _it_to = tmp_last - 1;
         const auto _size = _it_to - _it_from;
 
-        using _Data_Type = typename std::iterator_traits<OutputIterator>::value_type;
+        using _ValueType = typename std::iterator_traits<OutputIterator>::value_type;
 
         auto queue = exec.queue();
 
         // allocate USM memory and copying data to USM shared/device memory
-        TestUtils::usm_data_transfer<alloc_type, _Data_Type> dt_helper(queue, _it_from, _it_to);
+        TestUtils::usm_data_transfer<alloc_type, _ValueType> dt_helper(queue, _it_from, _it_to);
         auto sortingData = dt_helper.get_data();
 
         const std::int32_t count0 = KeyCount;
