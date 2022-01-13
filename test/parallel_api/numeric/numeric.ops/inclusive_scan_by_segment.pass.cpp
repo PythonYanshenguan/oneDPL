@@ -52,22 +52,123 @@ struct test_inclusive_scan_by_segment
     void
     initialize_data(Iterator1 host_keys, Iterator2 host_vals, Iterator3 host_val_res, Size n)
     {
-        //T keys[n1] = { 1, 2, 3, 4, 1, 1, 2, 2, 3, 3, 4, 4, 1, 1, 1, ...};
-        //T vals[n1] = { 1, 1, 1, ... };
-
         using DifferenceType = typename DifferenceTypeT<decltype(host_vals)>::DifferenceType;
 
-        DifferenceType segment_length = 1;
-        for (DifferenceType i = 0; i != n; )
+        switch (testMode)
         {
-          for (DifferenceType j = 0; j != 4*segment_length && i != n; ++j)
-          {
-              host_keys[i] = j/segment_length + 1;
-              host_vals[i] = 1;
-              host_val_res[i] = 0;
-              ++i;
-          }
-          ++segment_length;
+        case TestMode::eMain :
+            {
+                //T keys[n1] = { 1, 2, 3, 4, 1, 1, 2, 2, 3, 3, 4, 4, 1, 1, 1, ...};
+                //T vals[n1] = { 1, 1, 1, ... };
+
+                DifferenceType segment_length = 1;
+                for (DifferenceType i = 0; i != n;)
+                {
+                    for (int j = 0; j != 4 * segment_length && i != n; ++j)
+                    {
+                        host_keys[i] = j/segment_length + 1;
+                        host_vals[i] = 1;
+                        host_val_res[i] = -1;
+                        ++i;
+                    }
+                    ++segment_length;
+                }
+            }
+            break;
+
+        case TestMode::eMainRand1 :
+            {
+                int segment_length = rand() % 10;
+                for (DifferenceType i = 0; i != n;)
+                {
+                    for (DifferenceType j = 0; j != 4 * segment_length && i != n; ++j)
+                    {
+                        host_keys[i] = rand() % 20;
+                        host_vals[i] = rand() % 100;
+                        host_val_res[i] = -1;
+                        ++i;
+                    }
+                    ++segment_length;
+                }
+            }
+            break;
+        case TestMode::eMainRand2 :
+            {
+                int segment_length = rand() % 10;
+                for (DifferenceType i = 0; i != n;)
+                {
+                    for (DifferenceType j = 0; j != 4 * segment_length && i != n; ++j)
+                    {
+                        host_keys[i] = rand() % 3;
+                        host_vals[i] = rand() % 100;
+                        host_val_res[i] = -1;
+                        ++i;
+                    }
+                    ++segment_length;
+                }
+            }
+            break;
+        case TestMode::eV1 :
+            {
+                for (DifferenceType i = 0; i < n; ++i)
+                {
+                    host_keys[i] = 0;
+                    host_vals[i] = 0;
+                    host_val_res[i] = 0;
+                }
+            }
+            break;
+        case TestMode::eV2 :
+            {
+                for (DifferenceType i = 0; i < n; ++i)
+                {
+                    host_keys[i] = 1;
+                    host_vals[i] = 1;
+                    host_val_res[i] = 0;
+                }
+            }
+            break;
+        case TestMode::eV3 :
+            {
+                for (DifferenceType i = 0; i < n; ++i)
+                {
+                    host_keys[i] = i == 0 ? 1 : 0;
+                    host_vals[i] = i == 0 ? 1 : 0;
+                    host_val_res[i] = 0;
+                }
+            }
+            break;
+        case TestMode::eV4:
+            {
+                for (DifferenceType i = 0; i < n; ++i)
+                {
+                    host_keys[i] = i;
+                    host_vals[i] = i;
+                    host_val_res[i] = 0;
+                }
+            }
+            break;
+
+        case TestMode::eExampleFromDoc:
+            {
+                // Test source data from example
+                // https://docs.oneapi.io/versions/latest/onedpl/extension_api.html
+                // keys:   [0, 0, 0, 1, 1, 1]
+                // values: [1, 2, 3, 4, 5, 6]
+                // result: [1, 1 + 2 = 3, 1 + 2 + 3 = 6, 4, 4 + 5 = 9, 4 + 5 + 6 = 15]
+
+                constexpr int srcCount = 6;
+                const int srcKeys[srcCount] = { 0, 0, 0, 1, 1, 1 };
+                const int srcVals[srcCount] = { 1, 2, 3, 4, 5, 6 };
+
+                for (DifferenceType i = 0; i < n; ++i)
+                {
+                    host_keys[i] = i < srcCount ? srcKeys[i] : 0;
+                    host_vals[i] = i < srcCount ? srcVals[i] : 0;
+                    host_val_res[i] = 0;
+                }
+            }
+            break;
         }
     }
 
@@ -283,25 +384,45 @@ struct UserBinaryOperation
     }
 };
 
-int main() {
-    {
+int main()
+{
+	::std::srand(42);
+	
+	{
         using ValueType = ::std::uint64_t;
         using BinaryOperation = ::std::plus<ValueType>;
+	
+	    std::vector<TestMode> allModes = {TestMode::eMain, TestMode::eMainRand1, TestMode::eMainRand2, TestMode::eV1,
+	                                      TestMode::eV2,   TestMode::eV3,        TestMode::eV4,        TestMode::eExampleFromDoc };
+
+	    for (auto currentMode : allModes)
+	    {
+	        testMode = currentMode;
 
 #if TEST_DPCPP_BACKEND_PRESENT
-        test3buffers<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
-#endif // TEST_DPCPP_BACKEND_PRESENT
-        test_algo_three_sequences<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
-    }
+	        test3buffers<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
+#endif
+	        test_algo_three_sequences<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
+	    }
+	}
 
-    {
+	{
         using ValueType = ::std::int64_t;
         using BinaryOperation = UserBinaryOperation<ValueType>;
+	
+	    std::vector<TestMode> allModes = {TestMode::eMain, TestMode::eMainRand1, TestMode::eMainRand2, TestMode::eV1,
+	                                      TestMode::eV2,   TestMode::eV3,        TestMode::eV4,        TestMode::eExampleFromDoc };
+
+	    for (auto currentMode : allModes)
+	    {
+	        testMode = currentMode;
 
 #if TEST_DPCPP_BACKEND_PRESENT
-        test3buffers<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
-#endif // TEST_DPCPP_BACKEND_PRESENT
-        test_algo_three_sequences<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
-    }
+	        test3buffers<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
+#endif
+	        test_algo_three_sequences<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
+	    }
+	}
+
     return TestUtils::done();
 }
