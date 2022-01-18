@@ -330,6 +330,8 @@ struct UserBinaryOperation
 
 int main()
 {
+    int result = 0;
+
     std::cout << "Test operation: ::std::plus<ValueType>" << std::endl;
     {
 //        using ValueType = ::std::uint64_t;
@@ -340,6 +342,7 @@ int main()
 //#endif // TEST_DPCPP_BACKEND_PRESENT
 //        std::cout << "test_algo_three_sequences<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();" << std::endl;
 //        test_algo_three_sequences<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
+//        result = 1;
     }
 
     std::cout << "Test operation: UserBinaryOperation (op1 * op2)" << std::endl;
@@ -350,9 +353,14 @@ int main()
 #if TEST_DPCPP_BACKEND_PRESENT
         std::cout << "test3buffers<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();" << std::endl;
         test3buffers<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
+        result = 1;
 #endif // TEST_DPCPP_BACKEND_PRESENT
+
+#if !_PSTL_ICC_TEST_SIMD_UDS_MACOS_RELEASE_BROKEN
         std::cout << "test_algo_three_sequences<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();" << std::endl;
         test_algo_three_sequences<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
+        result = 1;
+#endif // !_PSTL_ICC_TEST_SIMD_UDS_MACOS_RELEASE_BROKEN
     }
-    return TestUtils::done();
+    return TestUtils::done(result);
 }
