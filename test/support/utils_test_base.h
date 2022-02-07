@@ -91,11 +91,13 @@ struct test_base_data
 template <sycl::usm::alloc alloc_type, typename TestValueType>
 struct test_base_data_usm : test_base_data<TestValueType>
 {
+    using Data = usm_data_transfer<alloc_type, TestValueType>;
+
     // Vector of source test data:
     //  - 1 item for test1buffer;
     //  - 2 items for test2buffers;
     //  - 3 items for test3buffers
-    ::std::vector<usm_data_transfer<alloc_type, TestValueType>> data;
+    ::std::vector<Data> data;
 
     test_base_data_usm(sycl::queue __q, ::std::initializer_list<::std::size_t> size_list);
 
