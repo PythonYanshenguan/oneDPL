@@ -586,9 +586,7 @@ test_algo_three_sequences()
     {
         using TestBaseData = test_base_data_sequence<T>;
 
-        TestBaseData test_base_data({ (::std::size_t)max_n,
-                                      (::std::size_t)max_n,
-                                      (::std::size_t)max_n });
+        TestBaseData test_base_data({ max_n, max_n, max_n });
 
         // create iterators
         auto inout1_first = test_base_data.get_start_from(0);
