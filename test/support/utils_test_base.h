@@ -161,24 +161,16 @@ struct test_base_data_buffer : test_base_data<TestValueType>
 template <typename TestValueType>
 struct test_base_data_sequence : test_base_data<TestValueType>
 {
-    struct Data
-    {
-        using TSourceData = Sequence<TestValueType>;
+    using Data = Sequence<TestValueType>;
 
-        TSourceData   src_data_seq;     // Sequence
+    // Vector of source test data:
+    //  - 3 items for test_algo_three_sequences
+    ::std::vector<Data> data;
 
-        Data(::std::size_t size)
-            : src_data_seq(size)
-        {
-        }
-    };
-    ::std::vector<Data> data;   // Vector of source test data:
-                                //  - 3 items for test_algo_three_sequences
-
-    test_base_data_sequence(::std::initializer_list<Data> init);
+    test_base_data_sequence(::std::initializer_list<::std::size_t> size_list);
 
     auto get_start_from(::std::size_t index)
-        -> decltype(data.at(index).src_data_seq.begin());
+        -> decltype(data.at(index).begin());
 
 // test_base_data
 
@@ -349,7 +341,7 @@ test_algo_three_sequences()
     {
         using TestBaseData = test_base_data_sequence<T>;
 
-        TestBaseData test_base_data({ max_n, max_n, max_n });
+        TestBaseData test_base_data({ { max_n }, { max_n }, { max_n } });
 
         // create iterators
         auto inout1_first = test_base_data.get_start_from(0);
@@ -511,18 +503,20 @@ TestUtils::test_base_data_buffer<TestValueType>::update_data(UDTKind kind, TestV
 
 //--------------------------------------------------------------------------------------------------------------------//
 template <typename TestValueType>
-TestUtils::test_base_data_sequence<TestValueType>::test_base_data_sequence(::std::initializer_list<Data> init)
-    : data(init)
+TestUtils::test_base_data_sequence<TestValueType>::test_base_data_sequence(
+    ::std::initializer_list<::std::size_t> size_list)
 {
+    for (auto& size : size_list)
+        data.emplace_back(size);
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
 template <typename TestValueType>
 auto
 TestUtils::test_base_data_sequence<TestValueType>::get_start_from(::std::size_t index)
--> decltype(data.at(index).src_data_seq.begin())
+-> decltype(data.at(index).begin())
 {
-    return data.at(index).src_data_seq.begin();
+    return data.at(index).begin();
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -539,7 +533,7 @@ TestValueType*
 TestUtils::test_base_data_sequence<TestValueType>::get_data(UDTKind kind)
 {
     auto& data_item = data.at(enum_val_to_index(kind));
-    return data_item.src_data_seq.data();
+    return data_item.data();
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
