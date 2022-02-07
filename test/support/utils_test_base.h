@@ -15,7 +15,7 @@
 #ifndef _UTILS_TEST_BASE_H
 #define _UTILS_TEST_BASE_H
 
-#include <memory>
+#include <vector>
 
 #include "utils_const.h"
 #include "utils_sequence.h"
@@ -88,142 +88,25 @@ struct test_base_data
 #if TEST_DPCPP_BACKEND_PRESENT
 ////////////////////////////////////////////////////////////////////////////////
 /// struct test_base_data_usm -  test source data for USM shared/device memory
-template <typename TestValueType>
+template <sycl::usm::alloc alloc_type, typename TestValueType>
 struct test_base_data_usm : test_base_data<TestValueType>
 {
-    struct Data
-    {
-        using TSourceData = usm_data_transfer_base<TestValueType>;
-        using TSourceDataPtr = ::std::unique_ptr<TSourceData>;
+    // Vector of source test data:
+    //  - 1 item for test1buffer;
+    //  - 2 items for test2buffers;
+    //  - 3 items for test3buffers
+    ::std::vector<usm_data_transfer<alloc_type, TestValueType>> data;
 
-        sycl::usm::alloc alloc_type;        // USM alloc type (shared/device)
-        TSourceDataPtr   src_data_usm;      // USM data transfer helper
-
-        template<typename _Size>
-        Data(sycl::usm::alloc __alloc_type, sycl::queue __q, _Size __sz)
-            : alloc_type(__alloc_type)
-        {
-            // We use this switch/case because USM allocation type specified in runtime.
-            switch (__alloc_type)
-            {
-            case sycl::usm::alloc::shared:
-                src_data_usm.reset(new usm_data_transfer<sycl::usm::alloc::shared, TestValueType>(__q, __sz));
-                break;
-            case sycl::usm::alloc::device:
-                src_data_usm.reset(new usm_data_transfer<sycl::usm::alloc::device, TestValueType>(__q, __sz));
-                break;
-            default:
-                assert(false);
-                break;
-            }
-        }
-
-        /// Get pointer to usm_data_transfer<sycl::usm::alloc::shared, TestValueType> class
-        /**
-         * Method return pointer from base class to derived class with required spezialization.
-         * 
-         * @return usm_data_transfer<sycl::usm::alloc::shared, TestValueType>* - pointer
-         */
-        auto get_usm_data_shared()
-        {
-            assert(alloc_type == sycl::usm::alloc::shared);
-            return reinterpret_cast<usm_data_transfer<sycl::usm::alloc::shared, TestValueType>*>(src_data_usm.get());
-        }
-
-        /// Get pointer to usm_data_transfer<sycl::usm::alloc::device, TestValueType> class
-        /**
-         * Method return pointer from base class to derived class with required spezialization.
-         *
-         * @return usm_data_transfer<sycl::usm::alloc::device, TestValueType>* - pointer
-         */
-        auto get_usm_data_device()
-        {
-            assert(alloc_type == sycl::usm::alloc::device);
-            return reinterpret_cast<usm_data_transfer<sycl::usm::alloc::device, TestValueType>*>(src_data_usm.get());
-        }
-
-        TestValueType* get_start_from()
-        {
-            TestValueType* result = nullptr;
-
-            switch (alloc_type)
-            {
-            case sycl::usm::alloc::shared:
-                result = get_usm_data_shared()->get_data();
-                break;
-
-            case sycl::usm::alloc::device:
-                result = get_usm_data_device()->get_data();
-                break;
-
-            default:
-                assert(false);
-            }
-
-            return result;
-        }
-
-        /// Retrieve data from USM shared/device memory
-        /**
-         * @param _Iterator __it - start iterator
-         * @param TDiff __objects_count - retrieving items couunt
-         */
-        template<typename _Iterator, typename TDiff>
-        void retrieve_data(_Iterator __it, TDiff __objects_count)
-        {
-            switch (alloc_type)
-            {
-            case sycl::usm::alloc::shared:
-                get_usm_data_shared()->retrieve_data(__it, __objects_count);
-                break;
-
-            case sycl::usm::alloc::device:
-                get_usm_data_device()->retrieve_data(__it, __objects_count);
-                break;
-
-            default:
-                assert(false);
-            }
-        }
-
-        /// Update data in USM shared/device memory
-        /**
-         * @param _Iterator __it - start iterator
-         * @param TDiff __objects_count - updating items couunt
-         */
-        template<typename _Iterator, typename TDiff>
-        void update_data(_Iterator __it, TDiff __objects_count)
-        {
-            switch (alloc_type)
-            {
-            case sycl::usm::alloc::shared:
-                get_usm_data_shared()->update_data(__it, __objects_count);
-                break;
-
-            case sycl::usm::alloc::device:
-                get_usm_data_device()->update_data(__it, __objects_count);
-                break;
-
-            default:
-                assert(false);
-            }
-        }
-    };
-    ::std::vector<Data> data;   // Vector of source test data:
-                                //  - 1 item for test1buffer;
-                                //  - 2 items for test2buffers;
-                                //  - 3 items for test3buffers
-
-    test_base_data_usm(sycl::usm::alloc alloc_type, sycl::queue __q, ::std::initializer_list<::std::size_t> size_list)
+    test_base_data_usm(sycl::queue __q, ::std::initializer_list<::std::size_t> size_list)
     {
         for (auto& size : size_list)
-            data.emplace_back(alloc_type, __q, size);
+            data.emplace_back(__q, size);
     }
 
     TestValueType* get_start_from(::std::size_t index)
     {
         auto& data_item = data.at(index);
-        return data_item.get_start_from();
+        return data_item.get_data();
     }
 
 // test_base_data
@@ -564,21 +447,17 @@ test_algo_three_sequences()
 
 //--------------------------------------------------------------------------------------------------------------------//
 #if TEST_DPCPP_BACKEND_PRESENT
-template <typename TestValueType>
+template <sycl::usm::alloc alloc_type, typename TestValueType>
 bool
-TestUtils::test_base_data_usm<TestValueType>::host_buffering_required() const
+TestUtils::test_base_data_usm<alloc_type, TestValueType>::host_buffering_required() const
 {
-    return data.end() != ::std::find_if(data.begin(), data.end(),
-                                        [](const Data& item)
-                                        {
-                                            return item.alloc_type != sycl::usm::alloc::shared;
-                                        });
+    return alloc_type != sycl::usm::alloc::shared;
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-template <typename TestValueType>
+template <sycl::usm::alloc alloc_type, typename TestValueType>
 TestValueType*
-TestUtils::test_base_data_usm<TestValueType>::get_data(UDTKind kind)
+TestUtils::test_base_data_usm<alloc_type, TestValueType>::get_data(UDTKind kind)
 {
     if (host_buffering_required())
         return nullptr;
@@ -587,24 +466,24 @@ TestUtils::test_base_data_usm<TestValueType>::get_data(UDTKind kind)
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-template <typename TestValueType>
+template <sycl::usm::alloc alloc_type, typename TestValueType>
 void
-TestUtils::test_base_data_usm<TestValueType>::retrieve_data(UDTKind kind, TestValueType* __it_from, TestValueType* __it_to)
+TestUtils::test_base_data_usm<alloc_type, TestValueType>::retrieve_data(UDTKind kind, TestValueType* __it_from, TestValueType* __it_to)
 {
-    auto& data_item = data.at(enum_val_to_index(kind));
-    assert(data_item.alloc_type == sycl::usm::alloc::device);
+    assert(alloc_type == sycl::usm::alloc::device);
 
+    auto& data_item = data.at(enum_val_to_index(kind));
     data_item.retrieve_data(__it_from, __it_to - __it_from);
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
-template <typename TestValueType>
+template <sycl::usm::alloc alloc_type, typename TestValueType>
 void
-TestUtils::test_base_data_usm<TestValueType>::update_data(UDTKind kind, TestValueType* __it_from, TestValueType* __it_to)
+TestUtils::test_base_data_usm<alloc_type, TestValueType>::update_data(UDTKind kind, TestValueType* __it_from, TestValueType* __it_to)
 {
-    auto& data_item = data.at(enum_val_to_index(kind));
-    assert(data_item.alloc_type == sycl::usm::alloc::device);
+    assert(alloc_type == sycl::usm::alloc::device);
 
+    auto& data_item = data.at(enum_val_to_index(kind));
     data_item.update_data(__it_from, __it_to - __it_from);
 }
 
