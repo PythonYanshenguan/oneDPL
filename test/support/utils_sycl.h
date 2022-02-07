@@ -217,8 +217,7 @@ test2buffers()
     { // sycl::buffer
         // 1. create buffers
         using TestBaseData = test_base_data_buffer<TestValueType>;
-        TestBaseData test_base_data({ max_n,
-                                      max_n });
+        TestBaseData test_base_data({ max_n, max_n });
 
         // 2. create iterators over buffers
         auto inout1_first = test_base_data.get_start_from(0);
@@ -273,9 +272,7 @@ test3buffers(int mult = kDefaultMultValue)
     { // sycl::buffer
         // 1. create buffers
         using TestBaseData = test_base_data_buffer<TestValueType>;
-        TestBaseData test_base_data({ max_n,
-                                      max_n,
-                                      max_n * mult });
+        TestBaseData test_base_data({ max_n, max_n, max_n * mult });
 
         // 2. create iterators over buffers
         auto inout1_first = test_base_data.get_start_from(0);

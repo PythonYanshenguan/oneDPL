@@ -125,29 +125,20 @@ struct test_base_data_usm : test_base_data<TestValueType>
 template <typename TestValueType>
 struct test_base_data_buffer : test_base_data<TestValueType>
 {
-    struct Data
-    {
-        using TSourceData = sycl::buffer<TestValueType, 1>;
+    using Data = sycl::buffer<TestValueType, 1>;
 
-        TSourceData   src_data_buf;     // SYCL buffer
+    // Vector of source test data:
+    //  - 1 item for test1buffer;
+    //  - 2 items for test2buffers
+    //  - 3 items for test3buffers
+    ::std::vector<Data> data;
 
-        template<typename _Size>
-        Data(_Size __sz)
-            : src_data_buf(sycl::range<1>(__sz))
-        {
-        }
-    };
-    ::std::vector<Data> data;   // Vector of source test data:
-                                //  - 1 item for test1buffer;
-                                //  - 2 items for test2buffers;
-                                //  - 3 items for test3buffers
-
-    test_base_data_buffer(::std::initializer_list<Data> init);
+    test_base_data_buffer(::std::initializer_list<::std::size_t> size_list);
 
     sycl::buffer<TestValueType, 1>& get_buffer(::std::size_t index);
 
     auto get_start_from(::std::size_t index)
-        -> decltype(oneapi::dpl::begin(data.at(index).src_data_buf));
+        -> decltype(oneapi::dpl::begin(data.at(index)));
 
 // test_base_data
 
@@ -447,9 +438,11 @@ TestUtils::test_base_data_usm<alloc_type, TestValueType>::update_data(UDTKind ki
 
 //--------------------------------------------------------------------------------------------------------------------//
 template <typename TestValueType>
-TestUtils::test_base_data_buffer<TestValueType>::test_base_data_buffer(::std::initializer_list<Data> init)
-    : data(init)
+TestUtils::test_base_data_buffer<TestValueType>::test_base_data_buffer(
+    ::std::initializer_list<::std::size_t> size_list)
 {
+    for (auto& size : size_list)
+        data.emplace_back(sycl::range<1>(size));
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -457,16 +450,16 @@ template <typename TestValueType>
 sycl::buffer<TestValueType, 1>&
 TestUtils::test_base_data_buffer<TestValueType>::get_buffer(::std::size_t index)
 {
-    return data.at(index).src_data_buf;
+    return data.at(index);
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
 template <typename TestValueType>
 auto
 TestUtils::test_base_data_buffer<TestValueType>::get_start_from(::std::size_t index)
--> decltype(oneapi::dpl::begin(data.at(index).src_data_buf))
+-> decltype(oneapi::dpl::begin(data.at(index)))
 {
-    return oneapi::dpl::begin(data.at(index).src_data_buf);
+    return oneapi::dpl::begin(data.at(index));
 }
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -491,7 +484,7 @@ void
 TestUtils::test_base_data_buffer<TestValueType>::retrieve_data(UDTKind kind, TestValueType* __it_from, TestValueType* __it_to)
 {
     auto& data_item = data.at(enum_val_to_index(kind));
-    auto acc = data_item.src_data_buf.template get_access<sycl::access::mode::read_write>();
+    auto acc = data_item.template get_access<sycl::access::mode::read_write>();
 
     auto __index = 0;
     for (auto __it = __it_from; __it != __it_to; ++__it, ++__index)
@@ -506,7 +499,7 @@ void
 TestUtils::test_base_data_buffer<TestValueType>::update_data(UDTKind kind, TestValueType* __it_from, TestValueType* __it_to)
 {
     auto& data_item = data.at(enum_val_to_index(kind));
-    auto acc = data_item.src_data_buf.template get_access<sycl::access::mode::read_write>();
+    auto acc = data_item.template get_access<sycl::access::mode::read_write>();
 
     auto __index = 0;
     for (auto __it = __it_from; __it != __it_to; ++__it, ++__index)
