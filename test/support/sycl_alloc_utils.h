@@ -153,15 +153,14 @@ public:
     template <typename _Iterator>
     void update_data(_Iterator __it)
     {
-        update_data(__it, 0, __count);
+        update_data(__it, __count);
     }
 
     template<typename _Iterator, typename _Size>
-    void update_data(_Iterator __it, __difference_type __offset, _Size __objects_count)
+    void update_data(_Iterator __it, _Size __objects_count)
     {
-        assert(0 <= __offset);
         assert(0 <= __objects_count);
-        assert(__offset + __objects_count <= __count);
+        assert(__objects_count <= __count);
 
         if (__count > 0 && __objects_count > 0)
         {
@@ -171,22 +170,21 @@ public:
             auto __src = std::addressof(*__it);
             assert(std::addressof(*(__it + __objects_count)) - __src == __objects_count);
 
-            copy_data_impl(__src, __ptr + __offset, __objects_count);
+            copy_data_impl(__src, __ptr, __objects_count);
         }
     }
 
     template <typename _Iterator>
     void retrieve_data(_Iterator __it)
     {
-        retrieve_data(__it, 0, __count);
+        retrieve_data(__it, __count);
     }
 
     template<typename _Iterator>
-    void retrieve_data(_Iterator __it, __difference_type __offset, __difference_type __objects_count)
+    void retrieve_data(_Iterator __it, __difference_type __objects_count)
     {
-        assert(0 <= __offset);
         assert(0 <= __objects_count);
-        assert(__offset + __objects_count <= __count);
+        assert(__objects_count <= __count);
 
         if (__count > 0 && __objects_count > 0)
         {
@@ -196,7 +194,7 @@ public:
             auto __dst = std::addressof(*__it);
             assert(std::addressof(*(__it + __objects_count)) - __dst == __objects_count);
 
-            copy_data_impl(__ptr + __offset, __dst, __objects_count);
+            copy_data_impl(__ptr, __dst, __objects_count);
         }
     }
 

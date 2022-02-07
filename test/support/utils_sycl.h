@@ -147,10 +147,10 @@ test1buffer()
     { // USM
         // 1. allocate usm memory
         using TestBaseData = test_base_data_usm<TestValueType>;
-        TestBaseData test_base_data(alloc_type, queue, { { (::std::size_t)max_n, (::std::size_t)inout1_offset } });
+        TestBaseData test_base_data(alloc_type, queue, { { (::std::size_t)max_n } });
 
-        // 2. create a pointer at first+offset
-        auto inout1_offset_first = test_base_data.get_start_from(0);
+        // 2. create a pointer at first
+        auto inout1_first = test_base_data.get_start_from(0);
 
         // 3. run algorithms
         for (size_t n = 1; n <= max_n; n = n <= 16 ? n + 1 : size_t(3.1415 * n))
@@ -159,7 +159,7 @@ test1buffer()
             ::std::cout << "n = " << n << ::std::endl;
 #    endif
             invoke_on_all_hetero_policies<0>()(create_test_obj<TestValueType, TestName>(test_base_data),
-                                               inout1_offset_first, inout1_offset_first + n,
+                                               inout1_first, inout1_first + n,
                                                n);
         }
     }
@@ -167,10 +167,10 @@ test1buffer()
     { // sycl::buffer
         // 1. create buffers
         using TestBaseData = test_base_data_buffer<TestValueType>;
-        TestBaseData test_base_data({ { max_n, inout1_offset } });
+        TestBaseData test_base_data({ max_n });
 
         // 2. create iterators over buffers
-        auto inout1_offset_first = test_base_data.get_start_from(0);
+        auto inout1_first = test_base_data.get_start_from(0);
 
         // 3. run algorithms
         for (size_t n = 1; n <= max_n; n = n <= 16 ? n + 1 : size_t(3.1415 * n))
@@ -179,7 +179,7 @@ test1buffer()
             ::std::cout << "n = " << n << ::std::endl;
 #endif
             invoke_on_all_hetero_policies<1>()(create_test_obj<TestValueType, TestName>(test_base_data),
-                                               inout1_offset_first, inout1_offset_first + n,
+                                               inout1_first, inout1_first + n,
                                                n);
         }
     }
@@ -195,12 +195,12 @@ test2buffers()
     { // USM
         // 1. allocate usm memory
         using TestBaseData = test_base_data_usm<TestValueType>;
-        TestBaseData test_base_data(alloc_type, queue, { { (::std::size_t)max_n, (::std::size_t)inout1_offset },
-                                                         { (::std::size_t)max_n, (::std::size_t)inout2_offset } });
+        TestBaseData test_base_data(alloc_type, queue, { (::std::size_t)max_n,
+                                                         (::std::size_t)max_n });
 
-        // 2. create pointers at first+offset
-        auto inout1_offset_first = test_base_data.get_start_from(0);
-        auto inout2_offset_first = test_base_data.get_start_from(1);
+        // 2. create pointers at first
+        auto inout1_first = test_base_data.get_start_from(0);
+        auto inout2_first = test_base_data.get_start_from(1);
 
         // 3. run algorithms
         for (size_t n = 1; n <= max_n; n = n <= 16 ? n + 1 : size_t(3.1415 * n))
@@ -209,8 +209,8 @@ test2buffers()
             ::std::cout << "n = " << n << ::std::endl;
 #    endif
             invoke_on_all_hetero_policies<0>()(create_test_obj<TestValueType, TestName>(test_base_data),
-                                               inout1_offset_first, inout1_offset_first + n,
-                                               inout2_offset_first, inout2_offset_first + n,
+                                               inout1_first, inout1_first + n,
+                                               inout2_first, inout2_first + n,
                                                n);
         }
     }
@@ -218,12 +218,12 @@ test2buffers()
     { // sycl::buffer
         // 1. create buffers
         using TestBaseData = test_base_data_buffer<TestValueType>;
-        TestBaseData test_base_data({ { max_n, inout1_offset },
-                                      { max_n, inout2_offset } });
+        TestBaseData test_base_data({ max_n,
+                                      max_n });
 
         // 2. create iterators over buffers
-        auto inout1_offset_first = test_base_data.get_start_from(0);
-        auto inout2_offset_first = test_base_data.get_start_from(1);
+        auto inout1_first = test_base_data.get_start_from(0);
+        auto inout2_first = test_base_data.get_start_from(1);
 
         // 3. run algorithms
         for (size_t n = 1; n <= max_n; n = n <= 16 ? n + 1 : size_t(3.1415 * n))
@@ -232,8 +232,8 @@ test2buffers()
             ::std::cout << "n = " << n << ::std::endl;
 #endif
             invoke_on_all_hetero_policies<1>()(create_test_obj<TestValueType, TestName>(test_base_data),
-                                               inout1_offset_first, inout1_offset_first + n,
-                                               inout2_offset_first, inout2_offset_first + n,
+                                               inout1_first, inout1_first + n,
+                                               inout2_first, inout2_first + n,
                                                n);
         }
     }
@@ -250,14 +250,14 @@ test3buffers(int mult = kDefaultMultValue)
 
         // 1. allocate usm memory
         using TestBaseData = test_base_data_usm<TestValueType>;
-        TestBaseData test_base_data(alloc_type, queue, { { (::std::size_t)max_n,        (::std::size_t)inout1_offset },
-                                                         { (::std::size_t)max_n,        (::std::size_t)inout2_offset },
-                                                         { (::std::size_t)max_n * mult, (::std::size_t)inout3_offset } });
+        TestBaseData test_base_data(alloc_type, queue, { (::std::size_t)max_n,
+                                                         (::std::size_t)max_n,
+                                                         (::std::size_t)max_n * mult });
 
-        // 2. create pointers at first+offset
-        auto inout1_offset_first = test_base_data.get_start_from(0);
-        auto inout2_offset_first = test_base_data.get_start_from(1);
-        auto inout3_offset_first = test_base_data.get_start_from(2);
+        // 2. create pointers at first+
+        auto inout1_first = test_base_data.get_start_from(0);
+        auto inout2_first = test_base_data.get_start_from(1);
+        auto inout3_first = test_base_data.get_start_from(2);
 
         // 3. run algorithms
         for (size_t n = 1; n <= max_n; n = (n <= 16 ? n + 1 : size_t(3.1415 * n)))
@@ -266,9 +266,9 @@ test3buffers(int mult = kDefaultMultValue)
             ::std::cout << "n = " << n << ::std::endl;
 #    endif
             invoke_on_all_hetero_policies<0>()(create_test_obj<TestValueType, TestName>(test_base_data),
-                                               inout1_offset_first, inout1_offset_first + n,
-                                               inout2_offset_first, inout2_offset_first + n,
-                                               inout3_offset_first, inout3_offset_first + n,
+                                               inout1_first, inout1_first + n,
+                                               inout2_first, inout2_first + n,
+                                               inout3_first, inout3_first + n,
                                                n);
         }
     }
@@ -276,14 +276,14 @@ test3buffers(int mult = kDefaultMultValue)
     { // sycl::buffer
         // 1. create buffers
         using TestBaseData = test_base_data_buffer<TestValueType>;
-        TestBaseData test_base_data({ { max_n,        inout1_offset },
-                                      { max_n,        inout2_offset },
-                                      { max_n * mult, inout3_offset } });
+        TestBaseData test_base_data({ max_n,
+                                      max_n,
+                                      max_n * mult });
 
         // 2. create iterators over buffers
-        auto inout1_offset_first = test_base_data.get_start_from(0);
-        auto inout2_offset_first = test_base_data.get_start_from(1);
-        auto inout3_offset_first = test_base_data.get_start_from(2);
+        auto inout1_first = test_base_data.get_start_from(0);
+        auto inout2_first = test_base_data.get_start_from(1);
+        auto inout3_first = test_base_data.get_start_from(2);
 
         // 3. run algorithms
         for (size_t n = 1; n <= max_n; n = (n <= 16 ? n + 1 : size_t(3.1415 * n)))
@@ -292,9 +292,9 @@ test3buffers(int mult = kDefaultMultValue)
             ::std::cout << "n = " << n << ::std::endl;
 #endif
             invoke_on_all_hetero_policies<1>()(create_test_obj<TestValueType, TestName>(test_base_data),
-                                               inout1_offset_first, inout1_offset_first + n,
-                                               inout2_offset_first, inout2_offset_first + n,
-                                               inout3_offset_first, inout3_offset_first + n,
+                                               inout1_first, inout1_first + n,
+                                               inout2_first, inout2_first + n,
+                                               inout3_first, inout3_first + n,
                                                n);
         }
     }

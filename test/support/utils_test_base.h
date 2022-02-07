@@ -87,12 +87,10 @@ struct test_base_data_usm : test_base_data<TestValueType>
 
         sycl::usm::alloc alloc_type;        // USM alloc type (shared/device)
         TSourceDataPtr   src_data_usm;      // USM data transfer helper
-        ::std::size_t    offset = 0;        // Offset in USM buffer
 
         template<typename _Size>
-        Data(sycl::usm::alloc __alloc_type, sycl::queue __q, _Size __sz, ::std::size_t __offset)
+        Data(sycl::usm::alloc __alloc_type, sycl::queue __q, _Size __sz)
             : alloc_type(__alloc_type)
-            , offset(__offset)
         {
             // We use this switch/case because we have test_base_data_visitor interface with
             // virtual functions, arguments of which can't be template classes.
@@ -100,10 +98,10 @@ struct test_base_data_usm : test_base_data<TestValueType>
             switch (__alloc_type)
             {
             case sycl::usm::alloc::shared:
-                src_data_usm.reset(new usm_data_transfer<sycl::usm::alloc::shared, TestValueType>(__q, __sz + __offset));
+                src_data_usm.reset(new usm_data_transfer<sycl::usm::alloc::shared, TestValueType>(__q, __sz));
                 break;
             case sycl::usm::alloc::device:
-                src_data_usm.reset(new usm_data_transfer<sycl::usm::alloc::device, TestValueType>(__q, __sz + __offset));
+                src_data_usm.reset(new usm_data_transfer<sycl::usm::alloc::device, TestValueType>(__q, __sz));
                 break;
             default:
                 assert(false);
@@ -142,11 +140,11 @@ struct test_base_data_usm : test_base_data<TestValueType>
             switch (alloc_type)
             {
             case sycl::usm::alloc::shared:
-                result = get_usm_data_shared()->get_data() + offset;
+                result = get_usm_data_shared()->get_data();
                 break;
 
             case sycl::usm::alloc::device:
-                result = get_usm_data_device()->get_data() + offset;
+                result = get_usm_data_device()->get_data();
                 break;
 
             default:
@@ -167,11 +165,11 @@ struct test_base_data_usm : test_base_data<TestValueType>
             switch (alloc_type)
             {
             case sycl::usm::alloc::shared:
-                get_usm_data_shared()->retrieve_data(__it, offset, __objects_count);
+                get_usm_data_shared()->retrieve_data(__it, __objects_count);
                 break;
 
             case sycl::usm::alloc::device:
-                get_usm_data_device()->retrieve_data(__it, offset, __objects_count);
+                get_usm_data_device()->retrieve_data(__it, __objects_count);
                 break;
 
             default:
@@ -190,11 +188,11 @@ struct test_base_data_usm : test_base_data<TestValueType>
             switch (alloc_type)
             {
             case sycl::usm::alloc::shared:
-                get_usm_data_shared()->update_data(__it, offset, __objects_count);
+                get_usm_data_shared()->update_data(__it, __objects_count);
                 break;
 
             case sycl::usm::alloc::device:
-                get_usm_data_device()->update_data(__it, offset, __objects_count);
+                get_usm_data_device()->update_data(__it, __objects_count);
                 break;
 
             default:
@@ -207,22 +205,14 @@ struct test_base_data_usm : test_base_data<TestValueType>
                                 //  - 2 items for test2buffers;
                                 //  - 3 items for test3buffers
 
-    struct InitParam
+    test_base_data_usm(sycl::usm::alloc alloc_type, sycl::queue __q, ::std::initializer_list<::std::size_t> size_list)
     {
-        ::std::size_t size   = 0;   // Source test data size
-        ::std::size_t offset = 0;   // Offset from test data
-    };
-
-    test_base_data_usm(sycl::usm::alloc alloc_type, sycl::queue __q, ::std::initializer_list<InitParam> init)
-    {
-        for (auto& initParam : init)
-            data.emplace_back(alloc_type, __q, initParam.size, initParam.offset);
+        for (auto& size : size_list)
+            data.emplace_back(alloc_type, __q, size);
     }
 
     TestValueType* get_start_from(::std::size_t index)
     {
-        TestValueType* result = nullptr;
-
         auto& data_item = data.at(index);
         return data_item.get_start_from();
     }
@@ -251,12 +241,10 @@ struct test_base_data_buffer : test_base_data<TestValueType>
         using TSourceData = sycl::buffer<TestValueType, 1>;
 
         TSourceData   src_data_buf;     // SYCL buffer
-        ::std::size_t offset = 0;       // Offset in SYCL buffer
 
         template<typename _Size>
-        Data(_Size __sz, ::std::size_t __offset)
-            : src_data_buf(sycl::range<1>(__sz + __offset))
-            , offset(__offset)
+        Data(_Size __sz)
+            : src_data_buf(sycl::range<1>(__sz))
         {
         }
     };
@@ -276,9 +264,9 @@ struct test_base_data_buffer : test_base_data<TestValueType>
     }
 
     auto get_start_from(::std::size_t index)
-        -> decltype(oneapi::dpl::begin(data.at(index).src_data_buf) + data.at(index).offset)
+        -> decltype(oneapi::dpl::begin(data.at(index).src_data_buf))
     {
-        return oneapi::dpl::begin(data.at(index).src_data_buf) + data.at(index).offset;
+        return oneapi::dpl::begin(data.at(index).src_data_buf);
     }
 
 // test_base_data
@@ -304,11 +292,9 @@ struct test_base_data_sequence : test_base_data<TestValueType>
         using TSourceData = Sequence<TestValueType>;
 
         TSourceData   src_data_seq;     // Sequence
-        ::std::size_t offset = 0;       // Offset in sequence
 
-        Data(::std::size_t size, ::std::size_t __offset)
+        Data(::std::size_t size)
             : src_data_seq(size)
-            , offset(__offset)
         {
         }
     };
@@ -321,9 +307,9 @@ struct test_base_data_sequence : test_base_data<TestValueType>
     }
 
     auto get_start_from(::std::size_t index)
-        -> decltype(data.at(index).src_data_seq.begin() + data.at(index).offset)
+        -> decltype(data.at(index).src_data_seq.begin())
     {
-        return data.at(index).src_data_seq.begin() + data.at(index).offset;
+        return data.at(index).src_data_seq.begin();
     }
 
 // test_base_data
@@ -600,19 +586,19 @@ test_algo_three_sequences()
     {
         using TestBaseData = test_base_data_sequence<T>;
 
-        TestBaseData test_base_data({ { (::std::size_t)max_n, (::std::size_t)inout1_offset },
-                                      { (::std::size_t)max_n, (::std::size_t)inout2_offset },
-                                      { (::std::size_t)max_n, (::std::size_t)inout3_offset } });
+        TestBaseData test_base_data({ (::std::size_t)max_n,
+                                      (::std::size_t)max_n,
+                                      (::std::size_t)max_n });
 
         // create iterators
-        auto inout1_offset_first = test_base_data.get_start_from(0);
-        auto inout2_offset_first = test_base_data.get_start_from(1);
-        auto inout3_offset_first = test_base_data.get_start_from(2);
+        auto inout1_first = test_base_data.get_start_from(0);
+        auto inout2_first = test_base_data.get_start_from(1);
+        auto inout3_first = test_base_data.get_start_from(2);
 
         invoke_on_all_host_policies()(create_test_obj<T, TestName>(test_base_data),
-                                      inout1_offset_first, inout1_offset_first + n,
-                                      inout2_offset_first, inout2_offset_first + n,
-                                      inout3_offset_first, inout3_offset_first + n,
+                                      inout1_first, inout1_first + n,
+                                      inout2_first, inout2_first + n,
+                                      inout3_first, inout3_first + n,
                                       n);
     }
 }
@@ -758,7 +744,7 @@ TestUtils::test_base_data_visitor_retrieve<TestValueType, Iterator>::on_visit(
     auto& data = obj.data.at(nIndex);
     auto acc = data.src_data_buf.template get_access<sycl::access::mode::read_write>();
 
-    auto __index = data.offset;
+    auto __index = 0;
     for (auto __it = Base::__it_from; __it != Base::__it_to; ++__it, ++__index)
     {
         *__it = acc[__index];
@@ -810,7 +796,7 @@ TestUtils::test_base_data_visitor_update<TestValueType, Iterator>::on_visit(
 
     auto acc = data.src_data_buf.template get_access<sycl::access::mode::read_write>();
 
-    auto __index = data.offset;
+    auto __index = 0;
     for (auto __it = Base::__it_from; __it != Base::__it_to; ++__it, ++__index)
     {
         acc[__index] = *__it;

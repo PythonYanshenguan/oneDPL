@@ -75,8 +75,7 @@ void test_simple_copy(size_t buffer_size)
 {
     // 1. create buffers
     using TestBaseData = test_base_data_buffer<int>;
-    TestBaseData test_base_data({ { buffer_size, 0 },
-                                  { buffer_size, 0 } });
+    TestBaseData test_base_data({ buffer_size, buffer_size });
 
     // 2. create iterators over buffers
     auto sycl_source_begin = test_base_data.get_start_from(0);
@@ -101,8 +100,7 @@ void test_ignore_copy(size_t buffer_size)
 {
     // 1. create buffers
     using TestBaseData = test_base_data_buffer<int>;
-    TestBaseData test_base_data({ { buffer_size, 0 },
-                                  { buffer_size, 0 } });
+    TestBaseData test_base_data({ buffer_size, buffer_size });
 
     // 2. create iterators over buffers
     auto& source_buf = test_base_data.get_buffer(0);
@@ -133,8 +131,7 @@ void test_multi_transform_copy(size_t buffer_size)
 {
     // 1. create buffers
     using TestBaseData = test_base_data_buffer<int>;
-    TestBaseData test_base_data({ { buffer_size, 0 },
-                                  { buffer_size, 0 } });
+    TestBaseData test_base_data({ buffer_size, buffer_size });
 
     // 2. create iterators over buffers
     sycl::buffer<int>& source_buf = test_base_data.get_buffer(0);
