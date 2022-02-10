@@ -360,6 +360,8 @@ C++ Standard API                     libstdc++  libc++     MSVC
 ``std::move_backward``               Tested     Tested     Tested
 ------------------------------------ ---------- ---------- ----------
 ``std::complex``                     Tested     Tested     Tested
+------------------------------------ ---------- ---------- ----------
+``std::conj``                        Tested     Tested     Tested
 ==================================== ========== ========== ==========
 
 These tests were done for the following versions of the standard C++ library:

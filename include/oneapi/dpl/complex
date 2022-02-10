@@ -22,6 +22,14 @@ namespace oneapi
 namespace dpl
 {
 using ::std::complex;
+using ::std::conj;
 } // namespace dpl
 } // namespace oneapi
+namespace dpl = oneapi::dpl;
+
+namespace std
+{
+using oneapi::dpl::conj;
+} // namespace std
+
 #endif
