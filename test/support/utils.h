@@ -80,24 +80,32 @@ class Sequence;
 #define EXPECT_EQ_RANGES(expected, actual, message)                                                                    \
     ::TestUtils::expect_equal(expected, actual, __FILE__, __LINE__, message)
 
-// Issue error message from outstr, adding a newline.
-// Real purpose of this routine is to have a place to hang a breakpoint.
 inline void
-issue_error_message(::std::stringstream& outstr)
+exit_on_error()
 {
-    outstr << ::std::endl;
-    ::std::cerr << outstr.str();
     ::std::exit(EXIT_FAILURE);
 }
 
+// Issue error message from outstr, adding a newline.
+// Real purpose of this routine is to have a place to hang a breakpoint.
 inline void
-expect(bool expected, bool condition, const char* file, std::int32_t line, const char* message)
+issue_error_message(::std::stringstream& outstr, bool exit_if_error = true)
+{
+    outstr << ::std::endl;
+    ::std::cerr << outstr.str();
+
+    if (exit_if_error)
+        exit_on_error();
+}
+
+inline void
+expect(bool expected, bool condition, const char* file, std::int32_t line, const char* message, bool exit_if_error = true)
 {
     if (condition != expected)
     {
         ::std::stringstream outstr;
         outstr << "error at " << file << ":" << line << " - " << message;
-        issue_error_message(outstr);
+        issue_error_message(outstr, exit_if_error);
     }
 }
 
@@ -105,20 +113,20 @@ expect(bool expected, bool condition, const char* file, std::int32_t line, const
 // Function must be able to detect const differences between expected and actual.
 template <typename T>
 void
-expect_equal_val(T& expected, T& actual, const char* file, std::int32_t line, const char* message)
+expect_equal_val(T& expected, T& actual, const char* file, std::int32_t line, const char* message, bool exit_if_error = true)
 {
     if (!(expected == actual))
     {
         ::std::stringstream outstr;
         outstr << "error at " << file << ":" << line << " - " << message << ", expected " << expected << " got "
                << actual;
-        issue_error_message(outstr);
+        issue_error_message(outstr, exit_if_error);
     }
 }
 
 template <typename R1, typename R2>
 void
-expect_equal(const R1& expected, const R2& actual, const char* file, std::int32_t line, const char* message)
+expect_equal(const R1& expected, const R2& actual, const char* file, std::int32_t line, const char* message, bool exit_if_error = true)
 {
     size_t n = expected.size();
     size_t m = actual.size();
@@ -127,7 +135,7 @@ expect_equal(const R1& expected, const R2& actual, const char* file, std::int32_
         ::std::stringstream outstr;
         outstr << "error at " << file << ":" << line << " - " << message << ", expected sequence of size " << n
                << " got sequence of size " << m;
-        issue_error_message(outstr);
+        issue_error_message(outstr, exit_if_error);
         return;
     }
     size_t error_count = 0;
@@ -138,7 +146,7 @@ expect_equal(const R1& expected, const R2& actual, const char* file, std::int32_
             ::std::stringstream outstr;
             outstr << "error at " << file << ":" << line << " - " << message << ", at index " << k << " expected "
                    << expected[k] << " got " << actual[k];
-            issue_error_message(outstr);
+            issue_error_message(outstr, exit_if_error);
             ++error_count;
         }
     }
@@ -146,7 +154,8 @@ expect_equal(const R1& expected, const R2& actual, const char* file, std::int32_
 
 template <typename T>
 void
-expect_equal_val(Sequence<T>& expected, Sequence<T>& actual, const char* file, std::int32_t line, const char* message)
+expect_equal_val(Sequence<T>& expected, Sequence<T>& actual, const char* file, std::int32_t line, const char* message,
+                 bool exit_if_error = true)
 {
     expect_equal(expected, actual, file, line, message);
 }
@@ -154,7 +163,7 @@ expect_equal_val(Sequence<T>& expected, Sequence<T>& actual, const char* file, s
 template <typename Iterator1, typename Iterator2, typename Size>
 void
 expect_equal(Iterator1 expected_first, Iterator2 actual_first, Size n, const char* file, std::int32_t line,
-             const char* message)
+             const char* message, bool exit_if_error = true)
 {
     size_t error_count = 0;
     for (size_t k = 0; k < n && error_count < 10; ++k, ++expected_first, ++actual_first)
@@ -163,7 +172,7 @@ expect_equal(Iterator1 expected_first, Iterator2 actual_first, Size n, const cha
         {
             ::std::stringstream outstr;
             outstr << "error at " << file << ":" << line << " - " << message << ", at index " << k;
-            issue_error_message(outstr);
+            issue_error_message(outstr, exit_if_error);
             ++error_count;
         }
     }
