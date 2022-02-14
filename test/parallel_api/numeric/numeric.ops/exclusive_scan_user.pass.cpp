@@ -45,11 +45,7 @@ test_with_usm(sycl::queue& q)
 {
     std::vector<int> v{ 3, 1, 4, 1, 5, 9, 2, 6 };
 
-    //sycl::queue syclQue(sycl::gpu_selector{});
-
     TestUtils::usm_data_transfer<alloc_type, int> dt_helper(q, v.begin(), v.end());
-    //int* excl_input_dev = sycl::malloc_device<int>(10, syclQue);
-    //syclQue.memcpy(excl_input_dev, v.data(), v.size() * sizeof(int)).wait();
     int* excl_input_dev = dt_helper.get_data();
 
     // Exclusive scan (in-place, incorrect results)
@@ -57,7 +53,6 @@ test_with_usm(sycl::queue& q)
     oneapi::dpl::exclusive_scan(oneapi::dpl::execution::make_device_policy(q), excl_input_dev, excl_input_dev + v.size(), excl_input_dev, 0);
 
     std::vector<int> excl_result_host_data_vector(v.size(), 0);
-    //int* excl_result_host = new int[v.size()];
     int* excl_result_host = excl_result_host_data_vector.data();
     q.memcpy(excl_result_host, excl_input_dev, v.size() * sizeof(int)).wait();
 
@@ -65,9 +60,6 @@ test_with_usm(sycl::queue& q)
     {
         assert(v[i] == excl_result_host[i]);
     }
-
-    //delete[] excl_result_host;
-    //sycl::free(excl_input_dev, syclQue);
 }
 #endif // TEST_DPCPP_BACKEND_PRESENT
 
