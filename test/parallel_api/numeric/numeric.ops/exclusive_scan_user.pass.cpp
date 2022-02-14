@@ -13,6 +13,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#define _GLIBCXX_USE_TBB_PAR_BACKEND 0 // libstdc++10
+
 #include "support/test_config.h"
 
 #include _PSTL_TEST_HEADER(execution)
@@ -21,61 +23,55 @@
 
 #include "support/utils.h"
 
-#include <iostream>
-#include <vector>
-
-#include "support/scan_serial_impl.h"
+#include <CL/sycl.hpp>
+//#include <oneapi/dpl/execution>
+//#include <oneapi/dpl/algorithm>
 
 #if TEST_DPCPP_BACKEND_PRESENT
-
 #include "support/sycl_alloc_utils.h"
+#endif // TEST_DPCPP_BACKEND_PRESENT
 
-template <sycl::usm::alloc alloc_type>
-void
-test_with_usm(sycl::queue& q, const ::std::size_t count)
-{
-    // Prepare source data
-    std::vector<int> h_idx(count);
-    for (int i = 0; i < count; i++)
-        h_idx[i] = i + 1;
+#include <cassert>
+//#include <algorithm>
+#include <vector>
+#include <iostream>
+//#include <numeric>              // std::inclusive_scan, exclusive_scan
+#include <functional>
 
-    // Copy source data to USM shared/device memory
-    TestUtils::usm_data_transfer<alloc_type, int> dt_helper_h_idx(q, ::std::begin(h_idx), ::std::end(h_idx));
-    auto d_idx = dt_helper_h_idx.get_data();
-
-    TestUtils::usm_data_transfer<alloc_type, int> dt_helper_h_val(q, count);
-    auto d_val = dt_helper_h_val.get_data();
-
-    // Run dpl::exclusive_scan algorithm on USM shared-device memory
-    auto myPolicy = oneapi::dpl::execution::make_device_policy<
-        TestUtils::unique_kernel_name<class copy, TestUtils::uniq_kernel_index<alloc_type>()>>(q);
-    oneapi::dpl::exclusive_scan(myPolicy, d_idx, d_idx + count, d_val, 0);
-
-    // Copy results from USM shared/device memory to host
-    std::vector<int> h_val(count);
-    dt_helper_h_val.retrieve_data(h_val.begin());
-
-    // Check results
-    std::vector<int> h_sval_expected(count);
-    exclusive_scan_serial(h_idx.begin(), h_idx.begin() + count, h_sval_expected.begin(), 0);
-
-    EXPECT_EQ_N(h_sval_expected.begin(), h_val.begin(), count, "wrong effect from exclusive_scan");
-}
-
+#if TEST_DPCPP_BACKEND_PRESENT
 template <sycl::usm::alloc alloc_type>
 void
 test_with_usm(sycl::queue& q)
 {
-    for (::std::size_t n = 0; n <= max_n; n = n <= 16 ? n + 1 : size_t(3.1415 * n))
-    {
-        test_with_usm<alloc_type>(q, n);
-    }
-}
+    std::vector<int> v{ 3, 1, 4, 1, 5, 9, 2, 6 };
 
+    //sycl::queue syclQue(sycl::gpu_selector{});
+
+    TestUtils::usm_data_transfer<alloc_type, int> dt_helper(q, v.begin(), v.end());
+    //int* excl_input_dev = sycl::malloc_device<int>(10, syclQue);
+    //syclQue.memcpy(excl_input_dev, v.data(), v.size() * sizeof(int)).wait();
+    int* excl_input_dev = dt_helper.get_data();
+
+    // Exclusive scan (in-place, incorrect results)
+    std::exclusive_scan(v.begin(), v.end(), v.begin(), 0);
+    oneapi::dpl::exclusive_scan(oneapi::dpl::execution::make_device_policy(q), excl_input_dev, excl_input_dev + v.size(), excl_input_dev, 0);
+
+    std::vector<int> excl_result_host_data_vector(v.size(), 0);
+    //int* excl_result_host = new int[v.size()];
+    int* excl_result_host = excl_result_host_data_vector.data();
+    q.memcpy(excl_result_host, excl_input_dev, v.size() * sizeof(int)).wait();
+
+    for (int i = 0; i < v.size(); i++)
+    {
+        assert(v[i] == excl_result_host[i]);
+    }
+
+    //delete[] excl_result_host;
+    //sycl::free(excl_input_dev, syclQue);
+}
 #endif // TEST_DPCPP_BACKEND_PRESENT
 
-int
-main()
+int main()
 {
 #if TEST_DPCPP_BACKEND_PRESENT
     sycl::queue q;
