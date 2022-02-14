@@ -21,6 +21,7 @@ namespace oneapi
 {
 namespace dpl
 {
+using ::std::abs;
 using ::std::complex;
 using ::std::conj;
 } // namespace dpl
@@ -29,6 +30,7 @@ namespace dpl = oneapi::dpl;
 
 namespace std
 {
+using oneapi::dpl::abs;
 using oneapi::dpl::conj;
 } // namespace std
 
