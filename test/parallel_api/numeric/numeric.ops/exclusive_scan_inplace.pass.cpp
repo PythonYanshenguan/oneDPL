@@ -37,6 +37,15 @@
 #include <iostream>
 #include <functional>
 
+template <typename T>
+void dump_data(const char* msg, const T& data)
+{
+    std::cout << msg;
+    for (auto item : data)
+        std::cout << item << " ";
+    std::cout << std::endl;
+}
+
 #if TEST_DPCPP_BACKEND_PRESENT
 template <sycl::usm::alloc alloc_type>
 void
@@ -44,24 +53,20 @@ test_with_usm(sycl::queue& q)
 {
     std::vector<int> v{ 3, 1, 4, 1, 5, 9, 2, 6 };
 
+    dump_data("Source data: ", v);
+
     std::vector<int> serial_exclusive_scan_result(v.size());
     exclusive_scan_serial(v.begin(), v.end(), serial_exclusive_scan_result.begin(), 0);
 
-    std::cout << "Serial exlusive scan result: ";
-    for (auto data : serial_exclusive_scan_result)
-        std::cout << data << " ";
-    std::cout << std::endl;
+    dump_data("Serial exlusive scan result: ", serial_exclusive_scan_result);
 
     TestUtils::usm_data_transfer<alloc_type, int> dt_helper(q, v.begin(), v.end());
     int* excl_input_dev = dt_helper.get_data();
 
-    // Exclusive scan (in-place, incorrect results)
+    // STL Exclusive scan (in-place, correct results)
     std::exclusive_scan(v.begin(), v.end(), v.begin(), 0);
 
-    std::cout << "std::exclusive_scan result: ";
-    for (auto data : v)
-        std::cout << data << " ";
-    std::cout << std::endl;
+    dump_data("std::exclusive_scan result: ", v);
 
     {
         TestUtils::usm_data_transfer<alloc_type, int> dt_helper_res(q, v.begin(), v.end());
@@ -70,26 +75,21 @@ test_with_usm(sycl::queue& q)
 
         std::vector<int> parallel_exclusive_scan_result(v.size());
         dt_helper_res.retrieve_data(parallel_exclusive_scan_result.begin());
-        std::cout << "oneapi::dpl::exclusive_scan result: ";
-        for (auto data : parallel_exclusive_scan_result)
-            std::cout << data << " ";
-        std::cout << std::endl;
+
+        dump_data("oneapi::dpl::exclusive_scan result: ", parallel_exclusive_scan_result);
     }
 
+    // DPL Exclusive scan (in-place, incorrect results)
     oneapi::dpl::exclusive_scan(oneapi::dpl::execution::make_device_policy(q), excl_input_dev, excl_input_dev + v.size(), excl_input_dev, 0);
 
     std::vector<int> excl_result_host_data_vector(v.size(), 0);
-    int* excl_result_host = excl_result_host_data_vector.data();
-    q.memcpy(excl_result_host, excl_input_dev, v.size() * sizeof(int)).wait();
+    dt_helper.retrieve_data(excl_result_host_data_vector.begin());
 
-    std::cout << "oneapi::dpl::exclusive_scan inplace result: ";
-    for (auto data : excl_result_host_data_vector)
-        std::cout << data << " ";
-    std::cout << std::endl;
+    dump_data("oneapi::dpl::exclusive_scan inplace result: ", excl_result_host_data_vector);
 
     for (int i = 0; i < v.size(); i++)
     {
-        assert(v[i] == excl_result_host[i]);
+        assert(v[i] == excl_result_host_data_vector[i]);
     }
 }
 #endif // TEST_DPCPP_BACKEND_PRESENT
