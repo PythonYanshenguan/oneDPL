@@ -19,8 +19,17 @@
 #include "oneapi/dpl/pstl/numeric_fwd.h"
 
 #include "support/test_config.h"
-#include "support/scan_serial_impl.h"
 
+
+template<typename ViewKeys, typename ViewVals, typename Res, typename Size, typename BinaryOperation>
+void inclusive_scan_by_segment_serial(ViewKeys keys, ViewVals vals, Res& res, Size n, BinaryOperation binary_op)
+{
+    for (Size i = 0; i < n; ++i)
+        if (i == 0 || keys[i] != keys[i - 1])
+            res[i] = vals[i];
+        else
+            res[i] = binary_op(res[i - 1], vals[i]);
+}
 
 template <typename Iterator, typename Size>
 void display_param(const char* msg, Iterator it, Size n)
