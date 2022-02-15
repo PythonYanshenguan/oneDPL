@@ -543,12 +543,15 @@ struct reverse_invoker
     operator()(Rest&&... rest)
     {
         // Random-access iterator
+        std::cout << "reverse_invoker - Random-access iterator" << std::endl;
         iterator_invoker<::std::random_access_iterator_tag, IsReverse>()(::std::forward<Rest>(rest)...);
 
         // Forward iterator
+        std::cout << "reverse_invoker - Forward iterator" << std::endl;
         iterator_invoker<::std::forward_iterator_tag, IsReverse>()(::std::forward<Rest>(rest)...);
 
         // Bidirectional iterator
+        std::cout << "reverse_invoker - Bidirectional iterator" << std::endl;
         iterator_invoker<::std::bidirectional_iterator_tag, IsReverse>()(::std::forward<Rest>(rest)...);
     }
 };
@@ -559,7 +562,10 @@ struct invoke_on_all_iterator_types
     void
     operator()(Rest&&... rest)
     {
+        std::cout << "invoke_on_all_iterator_types - reverse_invoker</* IsReverse = */ ::std::false_type>()(::std::forward<Rest>(rest)...);" << std::endl;
         reverse_invoker</* IsReverse = */ ::std::false_type>()(::std::forward<Rest>(rest)...);
+
+        std::cout << "invoke_on_all_iterator_types - reverse_invoker</* IsReverse = */ ::std::true_type>()(::std::forward<Rest>(rest)...);" << std::endl;
         reverse_invoker</* IsReverse = */ ::std::true_type>()(::std::forward<Rest>(rest)...);
     }
 };

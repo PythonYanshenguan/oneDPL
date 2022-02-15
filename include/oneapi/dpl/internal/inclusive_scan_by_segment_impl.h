@@ -25,6 +25,8 @@
 #include "by_segment_extension_defs.h"
 #include "../pstl/utils.h"
 
+#include <iostream>
+
 namespace oneapi
 {
 namespace dpl
@@ -64,6 +66,15 @@ inclusive_scan_by_segment_impl(Policy&& policy, InputIterator1 first1, InputIter
     transform(::std::forward<Policy>(policy), first1, last1 - 1, first1 + 1, _mask.get() + 1,
               oneapi::dpl::__internal::__not_pred<BinaryPredicate>(binary_pred));
 
+    ::std::cout << "mask :";
+    for (::std::size_t i = 0; i < n; ++i)
+    {
+        if (i > 0)
+            ::std::cout << ", ";
+        ::std::cout << mask[i];
+    }
+    ::std::cout << ::std::endl;
+
     typename internal::rebind_policy<policy_type, InclusiveScan1<policy_type>>::type policy1(policy);
     inclusive_scan(policy1, make_zip_iterator(first2, _mask.get()), make_zip_iterator(first2, _mask.get()) + n,
                    make_zip_iterator(result, _mask.get()),
@@ -101,6 +112,20 @@ inclusive_scan_by_segment_impl(Policy&& policy, InputIterator1 first1, InputIter
 
     transform(::std::forward<Policy>(policy), first1, last1 - 1, first1 + 1, _mask.get() + 1,
               oneapi::dpl::__internal::__not_pred<BinaryPredicate>(binary_pred));
+
+    ::std::cout << "mask :";
+    {
+        auto mask_buf = _mask.get_buffer();
+        auto mask = mask_buf.template get_access<sycl::access::mode::read_write>();
+
+        for (::std::size_t i = 0; i < n; ++i)
+        {
+            if (i > 0)
+                ::std::cout << ", ";
+            ::std::cout << mask[i];
+        }
+    }
+    ::std::cout << ::std::endl;
 
     typename internal::rebind_policy<policy_type, InclusiveScan1<policy_type>>::type policy1(policy);
     transform_inclusive_scan(policy1, make_zip_iterator(first2, _mask.get()),

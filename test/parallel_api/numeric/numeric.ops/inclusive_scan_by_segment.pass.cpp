@@ -16,22 +16,31 @@
 #include "oneapi/dpl/execution"
 #include "oneapi/dpl/algorithm"
 #include "oneapi/dpl/iterator"
+#include "oneapi/dpl/pstl/numeric_fwd.h"
 
 #include "support/test_config.h"
 #include "support/utils.h"
 #include "support/scan_serial_impl.h"
 
 
-#if TEST_DPCPP_BACKEND_PRESENT
-#include <CL/sycl.hpp>
-
-using namespace oneapi::dpl::execution;
-#endif
 using namespace TestUtils;
 
 // This macro may be used to analyze source data and test results in test_inclusive_scan_by_segment
 // WARNING: in the case of using this macro debug output is very large.
 //#define DUMP_CHECK_RESULTS
+
+template <typename Iterator, typename Size>
+void display_param(const char* msg, Iterator it, Size n)
+{
+    std::cout << msg;
+    for (Size i = 0; i < n; ++i)
+    {
+        if (i > 0)
+            std::cout << ", ";
+        std::cout << it[i];
+    }
+    std::cout << std::endl;
+}
 
 template <typename BinaryOperation>
 struct test_inclusive_scan_by_segment
@@ -59,25 +68,13 @@ struct test_inclusive_scan_by_segment
         }
     }
 
-#ifdef DUMP_CHECK_RESULTS
-    template <typename Iterator, typename Size>
-    void display_param(const char* msg, Iterator it, Size n)
-    {
-        std::cout << msg;
-        for (Size i = 0; i < n; ++i)
-        {
-            if (i > 0)
-                std::cout << ", ";
-            std::cout << it[i];
-        }
-        std::cout << std::endl;
-    }
-#endif // DUMP_CHECK_RESULTS
+//#ifdef DUMP_CHECK_RESULTS
+//#endif // DUMP_CHECK_RESULTS
 
     template <typename Iterator1, typename Iterator2, typename Iterator3, typename Size,
               typename BinaryOperationCheck = oneapi::dpl::__internal::__pstl_plus>
     void
-    check_values(Iterator1 host_keys, Iterator2 host_vals, Iterator3 val_res, Size n,
+    check_values(const char* msg, Iterator1 host_keys, Iterator2 host_vals, Iterator3 val_res, Size n,
                  BinaryOperationCheck op = BinaryOperationCheck())
     {
         // https://docs.oneapi.io/versions/latest/onedpl/extension_api.html
@@ -101,7 +98,7 @@ struct test_inclusive_scan_by_segment
         inclusive_scan_by_segment_serial(host_keys, host_vals, expected_val_res, n, op);
 
 #ifdef DUMP_CHECK_RESULTS
-        display_param("expected result: ", expected_val_res.data(), n);
+        display_param("exp.res.: ", expected_val_res.data(), n);
 #endif // DUMP_CHECK_RESULTS
 
         for (Size i = 0; i < n; ++i)
@@ -110,107 +107,29 @@ struct test_inclusive_scan_by_segment
         }
     }
 
-#if TEST_DPCPP_BACKEND_PRESENT
-    // specialization for hetero policy
-    template <typename Policy, typename Iterator1, typename Iterator2, typename Iterator3, typename Size>
-    typename ::std::enable_if<
-        oneapi::dpl::__internal::__is_hetero_execution_policy<typename ::std::decay<Policy>::type>::value &&
-            is_base_of_iterator_category<::std::random_access_iterator_tag, Iterator3>::value,
-        void>::type
-    operator()(Policy&& exec, Iterator1 keys_first, Iterator1 keys_last, Iterator2 vals_first, Iterator2 vals_last,
-               Iterator3 val_res_first, Iterator3 val_res_last, Size n)
-    {
-        typedef typename ::std::iterator_traits<Iterator1>::value_type KeyT;
-
-        // call algorithm with no optional arguments
-        {
-            auto host_keys = get_host_access(keys_first);
-            auto host_vals = get_host_access(vals_first);
-            auto host_val_res = get_host_access(val_res_first);
-
-            initialize_data(host_keys, host_vals, host_val_res, n);
-        }
-
-        auto new_policy = make_new_policy<new_kernel_name<Policy, 0>>(exec);
-        auto res1 = oneapi::dpl::inclusive_scan_by_segment(new_policy, keys_first, keys_last, vals_first, val_res_first);
-        exec.queue().wait_and_throw();
-
-        {
-            auto host_keys = get_host_access(keys_first);
-            auto host_vals = get_host_access(vals_first);
-            auto host_val_res = get_host_access(val_res_first);
-            check_values(host_keys, host_vals, host_val_res, n);
-
-            // call algorithm with equality comparator
-
-            initialize_data(host_keys, host_vals, host_val_res, n);
-        }
-
-        auto new_policy2 = make_new_policy<new_kernel_name<Policy, 1>>(exec);
-        auto res2 = oneapi::dpl::inclusive_scan_by_segment(new_policy2, keys_first, keys_last, vals_first, val_res_first,
-                                                           [](KeyT first, KeyT second) { return first == second; });
-        exec.queue().wait_and_throw();
-        {
-            auto host_keys = get_host_access(keys_first);
-            auto host_vals = get_host_access(vals_first);
-            auto host_val_res = get_host_access(val_res_first);
-            check_values(host_keys, host_vals, host_val_res, n);
-
-            // call algorithm with addition operator
-
-            initialize_data(host_keys, host_vals, host_val_res, n);
-        }
-
-        auto new_policy3 = make_new_policy<new_kernel_name<Policy, 2>>(exec);
-        auto res3 = oneapi::dpl::inclusive_scan_by_segment(new_policy3, keys_first, keys_last, vals_first, val_res_first,
-                                                           [](KeyT first, KeyT second) { return first == second; },
-                                                           BinaryOperation());
-        exec.queue().wait_and_throw();
-        auto host_keys = get_host_access(keys_first);
-        auto host_vals = get_host_access(vals_first);
-        auto host_val_res = get_host_access(val_res_first);
-        check_values(host_keys, host_vals, host_val_res, n, BinaryOperation());
-    }
-#endif
-
     // specialization for host execution policies
     template <typename Policy, typename Iterator1, typename Iterator2, typename Iterator3, typename Size>
-    typename ::std::enable_if<
-#if TEST_DPCPP_BACKEND_PRESENT
-        !oneapi::dpl::__internal::__is_hetero_execution_policy<typename ::std::decay<Policy>::type>::value &&
-#endif
-            is_base_of_iterator_category<::std::random_access_iterator_tag, Iterator3>::value,
-        void>::type
+    typename ::std::enable_if<is_base_of_iterator_category<::std::random_access_iterator_tag, Iterator3>::value,
+                              void>::type
     operator()(Policy&& exec, Iterator1 keys_first, Iterator1 keys_last, Iterator2 vals_first, Iterator2 vals_last,
                Iterator3 val_res_first, Iterator3 val_res_last, Size n)
     {
         typedef typename ::std::iterator_traits<Iterator1>::value_type KeyT;
-
-        // call algorithm with no optional arguments
-        initialize_data(keys_first, vals_first, val_res_first, n);
-        auto res1 = oneapi::dpl::inclusive_scan_by_segment(exec, keys_first, keys_last, vals_first, val_res_first);
-        check_values(keys_first, vals_first, val_res_first, n);
-
-        // call algorithm with equality comparator
-        initialize_data(keys_first, vals_first, val_res_first, n);
-        auto res2 = oneapi::dpl::inclusive_scan_by_segment(exec, keys_first, keys_last, vals_first, val_res_first,
-                                                           [](KeyT first, KeyT second) { return first == second; });
-        check_values(keys_first, vals_first, val_res_first, n);
 
         // call algorithm with addition operator
         initialize_data(keys_first, vals_first, val_res_first, n);
         auto res3 = oneapi::dpl::inclusive_scan_by_segment(exec, keys_first, keys_last, vals_first, val_res_first,
                                                            [](KeyT first, KeyT second) { return first == second; },
                                                            BinaryOperation());
-        check_values(keys_first, vals_first, val_res_first, n, BinaryOperation());
+        check_values("6", keys_first, vals_first, val_res_first, n, BinaryOperation());
     }
 
     // specialization for non-random_access iterators
     template <typename Policy, typename Iterator1, typename Iterator2, typename Iterator3, typename Size>
     typename ::std::enable_if<!is_base_of_iterator_category<::std::random_access_iterator_tag, Iterator3>::value,
                               void>::type
-    operator()(Policy&& exec, Iterator1 keys_first, Iterator1 keys_last, Iterator2 vals_first, Iterator2 vals_last,
-               Iterator3 val_res_first, Iterator3 val_res_last, Size n)
+    operator()(Policy&& /*exec*/, Iterator1 /*keys_first*/, Iterator1 /*keys_last*/, Iterator2 /*vals_first*/, Iterator2 /*vals_last*/,
+               Iterator3 /*val_res_first*/, Iterator3 /*val_res_last*/, Size /*n*/)
     {
     }
 };
@@ -224,28 +143,107 @@ struct UserBinaryOperation
     }
 };
 
-int main() {
-    {
-        using ValueType = ::std::uint64_t;
-        using BinaryOperation = ::std::plus<ValueType>;
+int main()
+{
+    constexpr size_t n = 7;
 
-#if TEST_DPCPP_BACKEND_PRESENT
-        test3buffers<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
-#endif // TEST_DPCPP_BACKEND_PRESENT
-        test_algo_three_sequences<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
+    using ValueType = ::std::int64_t;
+    using BinaryOperation = UserBinaryOperation<ValueType>;
+
+    std::vector<ValueType> key  = { 1, 2, 3, 4, 1, 1, 2 };
+    std::vector<ValueType> val  = { 1, 1, 1, 1, 1, 1, 1 };
+
+
+    using FlagType = unsigned int;
+    ::std::tuple<ValueType, FlagType> init(1, 1);
+    BinaryOperation binary_op;
+
+    {
+        std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << "---------- FORWARD ITERATORS -----------" << std::endl;
+        display_param("key  : ", key, n);
+        display_param("val  : ", val, n);
+
+        std::vector<ValueType> mask = { 1, 1, 1, 1, 1, 0, 1 };    // Mask for forward iterator
+        display_param("mask : ", mask.begin(), n);
+
+        std::vector<ValueType> results(n);
+
+        auto first2 = val.begin();
+        auto result = results.begin();
+
+        std::cout << std::endl;
+        std::cout << "Run oneapi::dpl::__internal::__brick_transform_scan with forward iterators..." << std::endl;
+
+        // Prepare params
+        auto __first     = oneapi::dpl::make_zip_iterator(first2, mask.data());
+        auto __last      = oneapi::dpl::make_zip_iterator(first2, mask.data()) + n;
+        auto __result    = oneapi::dpl::make_zip_iterator(result, mask.data());
+        auto __no_op     = oneapi::dpl::__internal::__no_op();
+        auto __binary_op = oneapi::dpl::internal::segmented_scan_fun<ValueType, FlagType, BinaryOperation>(binary_op);
+
+        // Call algorithm : __brick_transform_scan -> __unseq_backend::__simd_scan
+        oneapi::dpl::__internal::__brick_transform_scan(
+            __first, __last, __result, __no_op, init, __binary_op,
+            ::std::true_type(),                                     // Inclusive
+            ::std::true_type());                                    // is_vector
+
+        // Results:
+        display_param("results :", results, n);
+
+        // Expected results:
+        std::vector<ValueType> excpected_results(n);
+        inclusive_scan_by_segment_serial(key, val, excpected_results, n, binary_op);
+        display_param("exp.res.:", excpected_results, n);
     }
 
     {
-        using ValueType = ::std::int64_t;
-        using BinaryOperation = UserBinaryOperation<ValueType>;
+        std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << "---------- REVERSE ITERATORS -----------" << std::endl;
+        display_param("key  : ", key, n);
+        display_param("val  : ", val, n);
 
-#if TEST_DPCPP_BACKEND_PRESENT
-        test3buffers<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
-#endif // TEST_DPCPP_BACKEND_PRESENT
+        std::vector<ValueType> mask = { 1, 0, 1, 1, 1, 1, 1 };    // Mask for reverse iterator
+        display_param("mask : ", mask.rbegin(), n);
 
-#if !_PSTL_ICC_TEST_SIMD_UDS_MACOS_RELEASE_BROKEN
-        test_algo_three_sequences<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
-#endif // !_PSTL_ICC_TEST_SIMD_UDS_MACOS_RELEASE_BROKEN
+        std::vector<ValueType> results(n);
+
+        auto first2 = val.rbegin();
+        auto result = results.rbegin();
+
+        std::cout << std::endl;
+        std::cout << "Run oneapi::dpl::__internal::__brick_transform_scan with reverse iterators..." << std::endl;
+
+        // Prepare params
+        auto __first     = oneapi::dpl::make_zip_iterator(first2, mask.data());
+        auto __last      = oneapi::dpl::make_zip_iterator(first2, mask.data()) + n;
+        auto __result    = oneapi::dpl::make_zip_iterator(result, mask.data());
+        auto __no_op     = oneapi::dpl::__internal::__no_op();
+        auto __binary_op = oneapi::dpl::internal::segmented_scan_fun<ValueType, FlagType, BinaryOperation>(binary_op);
+
+        // Call algorithm : __brick_transform_scan -> __unseq_backend::__simd_scan
+        oneapi::dpl::__internal::__brick_transform_scan(
+            __first, __last, __result, __no_op, init, __binary_op,
+            ::std::true_type(),                                     // Inclusive
+            ::std::true_type());                                    // is_vector
+
+        // Results:
+        display_param("results :", results, n);
+
+        // Expected results:
+        std::vector<ValueType> excpected_results(n);
+        inclusive_scan_by_segment_serial(key, val, excpected_results, n, binary_op);
+        display_param("exp.res.:", excpected_results, n);
     }
+
+    {
+        std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << "---------- test_algo_three_sequences -----------" << std::endl;
+        test_algo_three_sequences<ValueType, test_inclusive_scan_by_segment<BinaryOperation>>();
+    }
+
     return TestUtils::done();
 }
