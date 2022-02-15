@@ -18,9 +18,6 @@
 #include "oneapi/dpl/iterator"
 #include "oneapi/dpl/pstl/numeric_fwd.h"
 
-#include "support/test_config.h"
-
-
 template<typename ViewKeys, typename ViewVals, typename Res, typename Size, typename BinaryOperation>
 void inclusive_scan_by_segment_serial(ViewKeys keys, ViewVals vals, Res& res, Size n, BinaryOperation binary_op)
 {
