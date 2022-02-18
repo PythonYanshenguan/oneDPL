@@ -97,6 +97,12 @@ namespace TestUtils
         {
         }
 
+        template <typename T>
+        std::size_t get_buf_size(const T& buf)
+        {
+            return sizeof(buf) / sizeof(buf[0]);
+        }
+
         void expect_true(bool condition, const char* file, std::int32_t line, const char* msg)
         {
             if (condition)
@@ -106,14 +112,39 @@ namespace TestUtils
             if (index == max_errors_count)
                 return;
 
-            if (file)
-                strcpy(error_buf_accessor[index].file, file);
+            copy_string(error_buf_accessor[index].file, get_buf_size(error_buf_accessor[index].file), file);
             error_buf_accessor[index].line = line;
-            if (msg)
-                strcpy(error_buf_accessor[index].msg, msg);
+            copy_string(error_buf_accessor[index].msg, get_buf_size(error_buf_accessor[index].msg), msg);
             error_buf_accessor[index].isError = true;
 
             ++index;
+        }
+
+        void copy_string(char* dest, std::size_t dest_size, const char* src)
+        {
+            assert(dest != nullptr);
+
+            if (src == nullptr)
+                return;
+
+            if (dest_size == 0)
+                return;
+
+            auto pDest = dest;
+            auto pSrc = src;
+
+            bool bNeedBreak = false;
+            for (size_t i = 0; i < (dest_size - 1) && !bNeedBreak; ++i)
+            {
+                *pDest = *pSrc;
+
+                bNeedBreak = *pSrc == 0x00;
+
+                ++pDest;
+                ++pSrc;
+            }
+
+            *pDest = 0x00;
         }
     };
 #endif
