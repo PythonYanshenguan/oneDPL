@@ -214,8 +214,8 @@ main()
     TestUtils::ErrorEngineHost error_engine_host;
 
     // Run test on host
-    TestComplexAbs<TestUtils::ErrorEngineHost, ::std::true_type, ::std::true_type> tcc(error_engine_host);
-    tcc.run_test();
+    //TestComplexAbs<TestUtils::ErrorEngineHost, ::std::true_type, ::std::true_type> tcc(error_engine_host);
+    //tcc.run_test();
 
 #if TEST_DPCPP_BACKEND_PRESENT
     try
@@ -237,5 +237,5 @@ main()
     }
 #endif // TEST_DPCPP_BACKEND_PRESENT
 
-    return TestUtils::done();
+    return TestUtils::done(TEST_DPCPP_BACKEND_PRESENT);
 }
