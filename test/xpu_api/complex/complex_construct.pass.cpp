@@ -222,6 +222,18 @@ main()
 
         test_kernel(deviceQueue);
     }
+    catch (const sycl::exception& e)
+    {
+        std::string errorMsg;
+        errorMsg = "\t\tSYCL exception during generation\n";
+        errorMsg += e.what();
+        errorMsg += "\n";
+        errorMsg += "OpenCL status: ";
+        errorMsg += e.get_cl_code();
+        errorMsg += "\n";
+
+        EXPECT_TRUE(false, errorMsg.c_str());
+    }
     catch (const std::exception& exc)
     {
         std::string errorMsg = "Exception occurred";
