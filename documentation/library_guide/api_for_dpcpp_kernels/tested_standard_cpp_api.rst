@@ -362,8 +362,6 @@ C++ Standard API                     libstdc++  libc++     MSVC
 ``std::complex``                     Tested     Tested     Tested
 ------------------------------------ ---------- ---------- ----------
 ``std::conj``                        Tested     Tested     Tested
------------------------------------- ---------- ---------- ----------
-``std::abs``                         Tested     Tested     Tested
 ==================================== ========== ========== ==========
 
 These tests were done for the following versions of the standard C++ library:
