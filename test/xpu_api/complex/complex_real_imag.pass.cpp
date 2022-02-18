@@ -144,6 +144,18 @@ main()
         // Type "long double" not specified in https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html#table.types.fundamental
         //test_kernel<long double>(deviceQueue);
     }
+    catch (const sycl::exception& e)
+    {
+        std::string errorMsg;
+        errorMsg = "\t\tSYCL exception during generation\n";
+        errorMsg += e.what();
+        errorMsg += "\n";
+        errorMsg += "OpenCL status: ";
+        errorMsg += e.get_cl_code();
+        errorMsg += "\n";
+
+        EXPECT_TRUE(false, errorMsg.c_str());
+    }
     catch (const std::exception& exc)
     {
         std::string errorMsg = "Exception occurred";
