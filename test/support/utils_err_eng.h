@@ -36,7 +36,7 @@ namespace TestUtils
 
     constexpr ::std::size_t kMaxLenFileName = 1024;
     constexpr ::std::size_t kMaxLenMessage  = 255;
-    constexpr ::std::size_t kMaxKernelErrorsCount = 255;
+    constexpr ::std::size_t kMaxKernelErrorsCount = 10;
 
     ////////////////////////////////////////////////////////////////////////////
     /// struct ErrorInfo - describe error info
