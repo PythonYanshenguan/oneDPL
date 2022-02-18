@@ -181,14 +181,6 @@ protected:
     {
         // 1) std::complex<float> conj(float z);
         test_form_2_since_CPP11_for_type<float>(2.3f);
-        //{
-        //    float z = 2.3;
-        //    auto complex_val_res = dpl::conj(z);
-        //    check_type<float>(complex_val_res.real());
-        //    check_type<float>(complex_val_res.imag());
-        //    EXPECT_TRUE_EE(errorEngine, complex_val_res.real() == z, "Wrong effect of conj in real part #3");
-        //    EXPECT_TRUE_EE(errorEngine, complex_val_res.imag() == 0.0, "Wrong effect of conj in imag part #3");
-        //}
 
         // 2) template< class DoubleOrInteger >
         //    std::complex<double> conj(DoubleOrInteger z);
