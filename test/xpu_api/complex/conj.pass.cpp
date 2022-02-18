@@ -116,10 +116,10 @@ public:
         test_form_1_since_CPP20<float>();
 
         // Sometimes device, on which SYCL::queue work, may not support double type
-        my_invoke_if<IsSupportedDouble>()([&](){ test_form_1_since_CPP20<double>; });
+        my_invoke_if<IsSupportedDouble>()([&](){ test_form_1_since_CPP20<double>(); });
 
         // Type "long double" not specified in https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html#table.types.fundamental
-        my_invoke_if<IsSupportedLongDouble>()(test_form_1_since_CPP20<long double>);
+        my_invoke_if<IsSupportedLongDouble>()([&]() { test_form_1_since_CPP20<long double>(); });
 
 #endif // __cplusplus >= 202002L
 
@@ -149,7 +149,7 @@ protected:
     // Test form (1) since C++20
     //          template< class T >
     //          constexpr std::complex<T> conj(const std::complex<T>& z);
-    template <typename >
+    template <typename TComplexDataType>
     void test_form_1_since_CPP20()
     {
         // const
@@ -180,7 +180,15 @@ protected:
     void test_form_2_since_CPP11()
     {
         // 1) std::complex<float> conj(float z);
-        test_form_2_since_CPP11_for_type<float>(2.3);
+        test_form_2_since_CPP11_for_type<float>(2.3f);
+        //{
+        //    float z = 2.3;
+        //    auto complex_val_res = dpl::conj(z);
+        //    check_type<float>(complex_val_res.real());
+        //    check_type<float>(complex_val_res.imag());
+        //    EXPECT_TRUE_EE(errorEngine, complex_val_res.real() == z, "Wrong effect of conj in real part #3");
+        //    EXPECT_TRUE_EE(errorEngine, complex_val_res.imag() == 0.0, "Wrong effect of conj in imag part #3");
+        //}
 
         // 2) template< class DoubleOrInteger >
         //    std::complex<double> conj(DoubleOrInteger z);
@@ -201,7 +209,7 @@ protected:
     void
     test_form_2_since_CPP11_for_type(TComplexDataType initVal)
     {
-        TComplexDataType z = initVal;
+        TComplexDataType z = (TComplexDataType)initVal;
         auto complex_val_res = dpl::conj(z);
         check_type<TRequiredComplexFieldsType>(complex_val_res.real());
         check_type<TRequiredComplexFieldsType>(complex_val_res.imag());
@@ -255,7 +263,6 @@ protected:
                     EXPECT_TRUE_EE(errorEngine, complex_val_res.real() == z, "Wrong effect of conj in real part #6");
                     EXPECT_TRUE_EE(errorEngine, complex_val_res.imag() == 0.0, "Wrong effect of conj in imag part #6");
                 });
-            }
         }
 
         // 3) std::complex<long double> conj(long double z);
