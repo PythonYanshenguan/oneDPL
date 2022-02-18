@@ -157,5 +157,5 @@ main()
     }
 #endif // TEST_DPCPP_BACKEND_PRESENT
 
-    return TestUtils::done(TEST_DPCPP_BACKEND_PRESENT);
+    return TestUtils::done();
 }
