@@ -342,14 +342,18 @@ test_kernel(sycl::queue& deviceQueue)
 int
 main()
 {
+    int is_done = 0;
+
+    // Extract std::conj tests on host into separate files
     // Prepare host error engine
-    TestUtils::ErrorEngineHost error_engine_host;
+    //TestUtils::ErrorEngineHost error_engine_host;
 
     // Run test on host
-    TestComplexConj<TestUtils::ErrorEngineHost, ::std::true_type, ::std::true_type> tcc(error_engine_host);
-    tcc.run_test();
+    //TestComplexConj<TestUtils::ErrorEngineHost, ::std::true_type, ::std::true_type> tcc(error_engine_host);
+    //tcc.run_test();
 
 #if TEST_DPCPP_BACKEND_PRESENT
+    is_done = 1;
     try
     {
         sycl::queue deviceQueue{ TestUtils::default_selector };
@@ -369,5 +373,5 @@ main()
     }
 #endif // TEST_DPCPP_BACKEND_PRESENT
 
-    return TestUtils::done();
+    return TestUtils::done(is_done);
 }
