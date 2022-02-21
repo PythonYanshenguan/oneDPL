@@ -23,6 +23,8 @@ namespace dpl
 {
 using ::std::complex;
 using ::std::conj;
+using ::std::imag;
+using ::std::real;
 } // namespace dpl
 } // namespace oneapi
 namespace dpl = oneapi::dpl;
@@ -30,6 +32,8 @@ namespace dpl = oneapi::dpl;
 namespace std
 {
 using oneapi::dpl::conj;
+using oneapi::dpl::imag;
+using oneapi::dpl::real;
 } // namespace std
 
 #endif
