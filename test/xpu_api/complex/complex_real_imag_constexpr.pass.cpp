@@ -91,8 +91,6 @@ public:
 
         // Type "long double" not specified in https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html#table.types.fundamental
         my_invoke_if<IsSupportedLongDouble>()([&]() { test<long double>(); });
-
-        test_constexpr<int>();
     }
 
 protected:
