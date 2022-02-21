@@ -31,32 +31,6 @@ using namespace oneapi::dpl::execution;
 #define COMPLEX_REAL_PART 1.5
 #define COMPLEX_IMAG_PART 2.25
 
-namespace
-{
-    template <typename IsOperationSupported>
-    struct my_invoke_if
-    {
-        template <typename Op/*, typename... Rest*/>
-        void
-            operator()(Op op/*, Rest&&... rest*/)
-        {
-            //op(::std::forward<Rest>(rest)...);
-            op();
-        }
-    };
-
-    template <>
-    struct my_invoke_if<::std::false_type>
-    {
-        template <typename Op/*, typename... Rest*/>
-        void
-            operator()(Op op/*, Rest&&... rest*/)
-        {
-            // Do not call op;
-        }
-    };
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // class TestStdRealImag - testing of std::real, std::imag
 // 
@@ -109,7 +83,7 @@ public:
             EXPECT_TRUE_EE(errorEngine, val == f, "Wrong effect from dpl::real #2");
         }
 
-        my_invoke_if<IsSupportedDouble>()(
+        TestUtils::invoke_test_if<IsSupportedDouble>()(
             [&]()
             {
                 double d = 2.3;
@@ -117,7 +91,7 @@ public:
                 EXPECT_TRUE_EE(errorEngine, val == d, "Wrong effect from dpl::real #3");
             });
 
-        my_invoke_if<IsSupportedLongDouble>()(
+        TestUtils::invoke_test_if<IsSupportedLongDouble>()(
             [&]()
             {
                 long double d = 2.3;
@@ -155,7 +129,7 @@ public:
             EXPECT_TRUE_EE(errorEngine, 0 == val, "Wrong effect from dpl::imag #2");
         }
 
-        my_invoke_if<IsSupportedDouble>()(
+        TestUtils::invoke_test_if<IsSupportedDouble>()(
             [&]()
             {
                 double d = 2.3;
@@ -163,7 +137,7 @@ public:
                 EXPECT_TRUE_EE(errorEngine, 0 == val, "Wrong effect from dpl::imag #3");
             });
 
-        my_invoke_if<IsSupportedLongDouble>()(
+        TestUtils::invoke_test_if<IsSupportedLongDouble>()(
             [&]()
             {
                 long double d = 2.3;
