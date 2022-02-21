@@ -37,33 +37,6 @@ void check_type(TVal val)
     static_assert(::std::is_same<typename ::std::decay<TVal>::type, TRequiredType>::value, "Types should be equals");
 }
 
-namespace
-{
-    template <typename IsOperationSupported>
-    struct my_invoke_if
-    {
-        template <typename Op/*, typename... Rest*/>
-        void
-        operator()(Op op/*, Rest&&... rest*/)
-        {
-            //op(::std::forward<Rest>(rest)...);
-            op();
-        }
-    };
-
-    template <>
-    struct my_invoke_if<::std::false_type>
-    {
-        template <typename Op/*, typename... Rest*/>
-        void
-        operator()(Op op/*, Rest&&... rest*/)
-        {
-            // Do not call op;
-        }
-    };
-};
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // class TestComplexConj - testing of std::conj from <complex>
 // 
@@ -106,20 +79,20 @@ public:
         test_form_1<float>();
 
         // Sometimes device, on which SYCL::queue work, may not support double type
-        my_invoke_if<IsSupportedDouble>()([&](){ test_form_1<double>(); });
+        TestUtils::invoke_test_if<IsSupportedDouble>()([&](){ test_form_1<double>(); });
 
         // Type "long double" not specified in https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html#table.types.fundamental
-        my_invoke_if<IsSupportedLongDouble>()([&](){ test_form_1<long double>(); });
+        TestUtils::invoke_test_if<IsSupportedLongDouble>()([&](){ test_form_1<long double>(); });
 
 #if __cplusplus >= 202002L
 
         test_form_1_since_CPP20<float>();
 
         // Sometimes device, on which SYCL::queue work, may not support double type
-        my_invoke_if<IsSupportedDouble>()([&](){ test_form_1_since_CPP20<double>(); });
+        TestUtils::invoke_test_if<IsSupportedDouble>()([&](){ test_form_1_since_CPP20<double>(); });
 
         // Type "long double" not specified in https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html#table.types.fundamental
-        my_invoke_if<IsSupportedLongDouble>()([&]() { test_form_1_since_CPP20<long double>(); });
+        TestUtils::invoke_test_if<IsSupportedLongDouble>()([&]() { test_form_1_since_CPP20<long double>(); });
 
 #endif // __cplusplus >= 202002L
 
@@ -186,18 +159,18 @@ protected:
         //    std::complex<double> conj(DoubleOrInteger z);
         {
             // double
-            my_invoke_if<IsSupportedDouble>()([&](){ test_form_2_since_CPP11_for_type<double>(2.3); });
+            TestUtils::invoke_test_if<IsSupportedDouble>()([&](){ test_form_2_since_CPP11_for_type<double>(2.3); });
 
             // Commented, because in DPCPP this code not compiled: error: member reference base type 'float' is not a structure or union
             //                                                     check_type<double>(complex_val_res.real());
             //                                                                                        ^
             //// integer
-            //my_invoke_if<IsSupportedDouble>()([&](){ test_form_2_since_CPP11_for_type<int, double>(2); });
+            //TestUtils::invoke_test_if<IsSupportedDouble>()([&](){ test_form_2_since_CPP11_for_type<int, double>(2); });
         }
 
         // 3) std::complex<long double> conj(long double z);
         // Type "long double" not specified in https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html#table.types.fundamental
-        my_invoke_if<IsSupportedLongDouble>()([&](){ test_form_2_since_CPP11_for_type<long double>(2.3); });
+        TestUtils::invoke_test_if<IsSupportedLongDouble>()([&](){ test_form_2_since_CPP11_for_type<long double>(2.3); });
     }
 
     template <typename TComplexDataType, typename TRequiredComplexFieldsType = TComplexDataType>
@@ -236,7 +209,7 @@ protected:
         //    std::complex<double> conj(DoubleOrInteger z);
         {
             // double
-            my_invoke_if<IsSupportedDouble>()(
+            TestUtils::invoke_test_if<IsSupportedDouble>()(
                 [&]()
                 {
                     constexpr double z = 2.3;
@@ -251,7 +224,7 @@ protected:
             //                                                     check_type<double>(complex_val_res.real());
             //                                                                                        ^
             //// integer
-            //my_invoke_if<IsSupportedDouble>()(
+            //TestUtils::invoke_test_if<IsSupportedDouble>()(
             //    [&]()
             //    {
             //        constexpr int z = 2;
@@ -264,7 +237,7 @@ protected:
         }
 
         // 3) std::complex<long double> conj(long double z);
-        my_invoke_if<IsSupportedLongDouble>()(
+        TestUtils::invoke_test_if<IsSupportedLongDouble>()(
             [&]()
             {
                 constexpr long double z = 2.3;
