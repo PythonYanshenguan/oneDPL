@@ -65,7 +65,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// class TestComplexRealImagConstexpr - testing of std::conj from <complex>
+// class TestComplexRealImagConstexpr - testing of constexpr std::complex<T>::real, constexpr std::complex<T>::imag
 // 
 // described https://en.cppreference.com/w/cpp/numeric/complex
 //
