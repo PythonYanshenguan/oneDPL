@@ -37,33 +37,6 @@ void check_type(TVal val)
     static_assert(::std::is_same<typename ::std::decay<TVal>::type, TRequiredType>::value, "Types should be equals");
 }
 
-namespace
-{
-    template <typename IsOperationSupported>
-    struct my_invoke_if
-    {
-        template <typename Op/*, typename... Rest*/>
-        void
-        operator()(Op op/*, Rest&&... rest*/)
-        {
-            //op(::std::forward<Rest>(rest)...);
-            op();
-        }
-    };
-
-    template <>
-    struct my_invoke_if<::std::false_type>
-    {
-        template <typename Op/*, typename... Rest*/>
-        void
-        operator()(Op op/*, Rest&&... rest*/)
-        {
-            // Do not call op;
-        }
-    };
-};
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // class TestComplexRealImagConstexpr - testing of constexpr std::complex<T>::real, constexpr std::complex<T>::imag
 // 
@@ -87,10 +60,10 @@ public:
     {
         test<float>();
 
-        my_invoke_if<IsSupportedDouble>()([&]() { test<double>(); });
+        TestUtils::invoke_test_if<IsSupportedDouble>()([&]() { test<double>(); });
 
         // Type "long double" not specified in https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html#table.types.fundamental
-        my_invoke_if<IsSupportedLongDouble>()([&]() { test<long double>(); });
+        TestUtils::invoke_test_if<IsSupportedLongDouble>()([&]() { test<long double>(); });
     }
 
 protected:
