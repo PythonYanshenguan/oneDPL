@@ -54,6 +54,9 @@
 #define _PSTL_STD_UNINITIALIZED_FILL_BROKEN (_MSC_VER == 1900)
 // GCC10 produces wrong answer calling exclusive_scan using vectorized polices
 #define TEST_GCC10_EXCLUSIVE_SCAN_BROKEN (_GLIBCXX_RELEASE == 10)
+// VC14 compile error on constexpr std::real, std::imag
+#define TEST_MSVC_STD_REAL_IMAG_ON_CPP14_BROKEN                                                                       \
+    (_MSC_VER && __cplusplus == 201402L)
 
 #define _PSTL_SYCL_TEST_USM 1
 

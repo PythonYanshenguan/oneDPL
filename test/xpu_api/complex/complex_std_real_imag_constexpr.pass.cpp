@@ -215,14 +215,20 @@ test_kernel(sycl::queue& deviceQueue)
 int
 main()
 {
+    int is_done = 0;
+
     // Prepare host error engine
     TestUtils::ErrorEngineHost error_engine_host;
 
     // Run test on host
+#ifndef TEST_MSVC_STD_REAL_IMAG_ON_CPP14_BROKEN
     TestStdRealImagConstexpr<TestUtils::ErrorEngineHost, ::std::true_type, ::std::true_type> tcc(error_engine_host);
     tcc.run_test();
+    is_done = 1;
+#endif // TEST_MSVC_STD_REAL_IMAG_ON_CPP14_BROKEN
 
 #if TEST_DPCPP_BACKEND_PRESENT
+    is_done = 1;
     try
     {
         sycl::queue deviceQueue{ TestUtils::default_selector };
@@ -242,5 +248,5 @@ main()
     }
 #endif // TEST_DPCPP_BACKEND_PRESENT
 
-    return TestUtils::done();
+    return TestUtils::done(is_done);
 }
