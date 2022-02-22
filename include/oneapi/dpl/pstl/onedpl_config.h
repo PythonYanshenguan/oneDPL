@@ -64,7 +64,8 @@
 #    define _DPSTD_DEPRECATED_MSG(msg)
 #endif
 
-#if ONEDPL_USE_TBB_BACKEND || (!defined(ONEDPL_USE_TBB_BACKEND) && !ONEDPL_USE_OPENMP_BACKEND && __has_include(<tbb/version.h>))
+#if ONEDPL_USE_TBB_BACKEND ||                                                                                          \
+    (!defined(ONEDPL_USE_TBB_BACKEND) && !ONEDPL_USE_OPENMP_BACKEND && __has_include(<tbb/version.h>))
 #    define _ONEDPL_PAR_BACKEND_TBB 1
 #endif
 
